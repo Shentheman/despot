@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>despot</name>
+  <version>0.1.0</version>
+  <description>DESPOT</description>
+  <maintainer email="shenli@mit.edu">Shen Li</maintainer>
+  <author email="shenli@mit.edu">Shen Li</author>
+  <license>APACHE LICENSE-2.0, GPL-2.0</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

@@ -1,5 +1,7 @@
 #include <despot/simple_tui.h>
 
+#include <cpp_utils/termcolor.hpp>
+
 using namespace std;
 
 namespace despot {
@@ -343,7 +345,10 @@ int SimpleTUI::run(int argc, char *argv[]) {
   /* =========================
    * initialize model
    * =========================*/
+  // std::cout<<
   DSPOMDP *model = InitializeModel(options);
+  std::cout << termcolor::red << "red" << std::endl;
+  exit(0);
 
   /* =========================
    * initialize solver

@@ -37,7 +37,9 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 # if CMake has a module that aids in finding this package 
 # (https://cmake.org/Wiki/CMake:How_To_Find_Libraries)
 
-find_package(catkin REQUIRED COMPONENTS)
+find_package(catkin REQUIRED COMPONENTS
+  cpp_utils
+)
 
 
 ###################################
@@ -69,7 +71,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS
+  CATKIN_DEPENDS cpp_utils
   DEPENDS
   CFG_EXTRAS
 )
@@ -85,6 +87,9 @@ catkin_package(
 # The first argument "include" indicates that the include/ directory within the package is also part of the path.
 include_directories(
   include 
+)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
 )
 
 
@@ -149,4 +154,5 @@ add_library("${PROJECT_NAME}" SHARED
 )
 target_link_libraries("${PROJECT_NAME}"
   ${TinyXML_LIBRARIES}
+  ${catkin_LIBRARIES}
 )

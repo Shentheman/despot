@@ -35,8 +35,9 @@ public:
 	Tiger();
 	Tiger(std::string params_file);
 
-	bool Step(State& s, double random_num, int action, double& reward,
-		OBS_TYPE& obs) const;
+	bool Step(
+      State& s, double random_num, int action,
+      double& reward, OBS_TYPE& obs) const;
 	int NumStates() const;
 	int NumActions() const;
 	double ObsProb(OBS_TYPE obs, const State& s, int a) const;

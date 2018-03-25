@@ -138,6 +138,10 @@ public:
   SimpleTUI();
   virtual ~SimpleTUI();
 
+  /*
+   * Initialize the upper and lower bounds,
+   * and intialize a solver for the model with the bounds.
+   */
   virtual DSPOMDP* InitializeModel(option::Option* options) = 0;
   virtual void InitializeDefaultParameters() = 0;
 
@@ -147,14 +151,17 @@ public:
   int run(int argc, char* argv[]);
 
   void OptionParse(option::Option* options, int& num_runs,
-                   std::string& simulator_type, std::string& belief_type, int& time_limit,
-                   std::string& solver_type, bool& search_solver);
+      std::string& simulator_type, std::string& belief_type,
+      int& time_limit, std::string& solver_type, bool& search_solver);
 
+  /*
+   * Initialize a POMDPEvaluator with solver, model, time limits.
+   */
   void InitializeEvaluator(Evaluator*& simulator, option::Option* options,
-                           DSPOMDP* model, Solver* solver, int num_runs,
-                           clock_t main_clock_start, std::string simulator_type,
-                           std::string belief_type, int time_limit,
-                           std::string solver_type);
+       DSPOMDP* model, Solver* solver, int num_runs,
+       clock_t main_clock_start, std::string simulator_type,
+       std::string belief_type, int time_limit,
+       std::string solver_type);
 
   void DisplayParameters(option::Option* options, DSPOMDP* model);
 

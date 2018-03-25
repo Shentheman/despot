@@ -27,20 +27,55 @@ public:
 	virtual ~Belief();
 
 	virtual std::vector<State*> Sample(int num) const = 0;
+
+  /*
+   * Update the history by adding the action a and the observation o pair.
+   * Update the particles by stepping each particle with the action
+   * with randomly sampled observations o'.
+   * Then compute the prob of o and assign the prob to weigh the particle.
+   * Now we have a newly weighted and filtered list of particles which support
+   * the given a and o.
+   *
+   * If the list is empty, we resample.
+   * Normalize the weights of the particles in the new list.
+   */
 	virtual void Update(int action, OBS_TYPE obs) = 0;
 
 	virtual std::string text() const;
-	friend std::ostream& operator<<(std::ostream& os, const Belief& belief);
+	friend std::ostream& operator<<(std::ostream& os, const Belief& x);
 	virtual Belief* MakeCopy() const = 0;
 
-	static std::vector<State*> Sample(int num, std::vector<State*> belief,
-		const DSPOMDP* model);
-	static std::vector<State*> Resample(int num, const std::vector<State*>& belief,
-		const DSPOMDP* model, History history, int hstart = 0);
-	static std::vector<State*> Resample(int num, const Belief& belief,
-		History history, int hstart = 0);
-	static std::vector<State*> Resample(int num, const DSPOMDP* model,
-		const StateIndexer* indexer, int action, OBS_TYPE obs);
+	static std::vector<State*> Sample(
+      int num, std::vector<State*> belief, const DSPOMDP* model);
+
+  /*
+   * Sample a particle, step through the actions in the history,
+   * use random number to sample observations.
+   * If prob is good, save it.
+   * Remove all the particles with small weights.
+   * Keep generating new particles until we have enough amount.
+   */
+  /*
+   * I. Resampling by searching initial particles
+   * which are consistent with history.
+   */
+	static std::vector<State*> Resample(
+      int num, const std::vector<State*>& belief,
+      const DSPOMDP* model, History history, int hstart = 0);
+  /*
+   * II. Resampling by drawing random particles from prior
+   * which are consistent with history.
+   */
+	static std::vector<State*> Resample(
+      int num, const Belief& belief, History history, int hstart = 0);
+
+  /*
+   * Resampling by searching states consistent
+   * with last (action, observation) pair.
+   */
+	static std::vector<State*> Resample(
+      int num, const DSPOMDP* model,
+      const StateIndexer* indexer, int action, OBS_TYPE obs);
 };
 
 /* =============================================================================

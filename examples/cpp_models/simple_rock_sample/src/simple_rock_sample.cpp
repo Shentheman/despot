@@ -40,6 +40,8 @@ int SimpleRockSample::NumActions() const {
 
 bool SimpleRockSample::Step(State& state, double rand_num, int action,
         double& reward, OBS_TYPE& obs) const {
+  cout << "[SimpleRockSample::Step()]" << endl;
+
     SimpleState& simple_state = static_cast < SimpleState& >(state);
     int& rover_position = simple_state.rover_position;
     int& rock_status = simple_state.rock_status;
@@ -134,6 +136,18 @@ Belief* SimpleRockSample::InitialBelief(const State* start, string type) const {
 		bad_rock->rover_position = MIDDLE;
 		bad_rock->rock_status = O_BAD;
 		particles.push_back(bad_rock);
+
+    // for debug
+    // 2
+    // cout << NumActiveParticles() << endl;
+    // ParticleBelief* x = new ParticleBelief(particles, this);
+    // 4098 = 2 + 4096
+    // cout << NumActiveParticles() << endl;
+    // XXX: Although we split the 2 particles into 4096 particles inside
+    // new ParticleBelief(particles, this), but we will not removed them
+    // from the memory. So now we have 4098 in our memory.
+    // TODO: Maybe this is good for manipulation memory in a batch?
+    // exit(0);
 
 		return new ParticleBelief(particles, this);
 	} else {
@@ -274,6 +288,7 @@ void SimpleRockSample::PrintObs(const State& state, OBS_TYPE observation,
 }
 
 void SimpleRockSample::PrintBelief(const Belief& belief, ostream& out) const {
+  out << "[SimpleRockSample::PrintObs()]"<<endl;
 	const vector<State*>& particles =
 		static_cast<const ParticleBelief&>(belief).particles();
 
@@ -286,8 +301,10 @@ void SimpleRockSample::PrintBelief(const Belief& belief, ostream& out) const {
 		pos_probs[state->rover_position] += particle->weight;
 	}
 
-	out << "Rock belief: " << rock_status << endl;
 
+	out << "The weighted averages among " << particles.size() << " particles:"
+    << endl;
+	out << "Rock belief: " << rock_status << endl;
 	out << "Position belief:" << " LEFT" << ":" << pos_probs[0] << " MIDDLE"
 		<< ":" << pos_probs[1] << " RIGHT" << ":" << pos_probs[2] << endl;
 }

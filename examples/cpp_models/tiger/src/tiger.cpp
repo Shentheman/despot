@@ -69,11 +69,14 @@ public:
 Tiger::Tiger() {
 }
 
-bool Tiger::Step(State& s, double random_num, int action, double& reward,
-	OBS_TYPE& obs) const {
+bool Tiger::Step(
+    State& s, double random_num, int action, double& reward,
+    OBS_TYPE& obs) const
+{
 	TigerState& state = static_cast<TigerState&>(s);
 	bool terminal = false;
 
+  // Since it is inside Tiger class, so we don't need to do Tiger::LEFT here.
 	if (action == LEFT || action == RIGHT) {
 		reward = state.tiger_position != action ? 10 : -100;
 		state.tiger_position = random_num <= 0.5 ? LEFT : RIGHT;
@@ -81,27 +84,35 @@ bool Tiger::Step(State& s, double random_num, int action, double& reward,
 	} else {
 		reward = -1;
 		if (random_num <= 1 - NOISE)
+      // Correct guess of tiger position
 			obs = state.tiger_position;
 		else
+      // Incorrect guess of tiger position
 			obs = (LEFT + RIGHT - state.tiger_position);
 	}
+  // never terminate
 	return terminal;
 }
 
 int Tiger::NumStates() const {
+  // Tiger::LEFT, Tiger::RIGHT
 	return 2;
 }
 
 int Tiger::NumActions() const {
+  // Tiger::LEFT, Tiger::RIGHT, Tiger::LISTEN
 	return 3;
 }
 
 double Tiger::ObsProb(OBS_TYPE obs, const State& s, int a) const {
 	const TigerState& state = static_cast<const TigerState&>(s);
 
+  // If action is LEFT or RIGHT, there should not be any obs.
+  // We use an arbitrary value 2 to represent invalid observation.
 	if (a != LISTEN)
 		return obs == 2;
 
+  // (1 - NOISE) - correct observation
 	return state.tiger_position == obs ? (1 - NOISE) : NOISE;
 }
 
@@ -109,8 +120,10 @@ State* Tiger::CreateStartState(string type) const {
 	return new TigerState(Random::RANDOM.NextInt(2));
 }
 
-Belief* Tiger::InitialBelief(const State* start, string type) const {
+Belief* Tiger::InitialBelief(const State* start, string type) const
+{
 	vector<State*> particles;
+  // weight = 0.5, state_id = -1
 	TigerState* left = static_cast<TigerState*>(Allocate(-1, 0.5));
 	left->tiger_position = LEFT;
 	particles.push_back(left);

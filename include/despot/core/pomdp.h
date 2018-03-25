@@ -34,6 +34,7 @@ public:
 
 	virtual std::string text() const;
 
+  // The total weight of all the particles
 	static double Weight(const std::vector<State*>& particles);
 
 	State* operator()(int state_id, double weight) {

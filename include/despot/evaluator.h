@@ -110,15 +110,24 @@ public:
 		model_ = m;
 	}
 
-	virtual inline void world_seed(unsigned seed) {
-	}
+	virtual inline void world_seed(unsigned seed){}
 
 	virtual int Handshake(std::string instance) = 0; // Initialize simulator and return number of runs.
+
+  /*
+   * Initialize initial state, initial belief,
+   * assign the initial belief to solver.
+   */
 	virtual void InitRound() = 0;
 
 	bool RunStep(int step, int round);
 
 	virtual double EndRound() = 0; // Return total undiscounted reward for this round.
+
+  /*
+   * Use a random number to sample an observation, a reward, a next state.
+   * And save the reward.
+   */
 	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs) = 0;
 	virtual void ReportStepReward();
 	virtual double End() = 0; // Free resources and return total reward collected
@@ -179,16 +188,19 @@ protected:
 	Random random_;
 
 public:
+  // Finish the num_steps steps in target_finish_time.
 	POMDPEvaluator(DSPOMDP* model, std::string belief_type, Solver* solver,
 		clock_t start_clockt, std::ostream* out, double target_finish_time = -1,
 		int num_steps = -1);
 	~POMDPEvaluator();
 
-	virtual inline void world_seed(unsigned seed) {
+	virtual inline void world_seed(unsigned seed)
+  {
 		random_ = Random(seed);
 	}
 
 	int Handshake(std::string instance);
+
 	void InitRound();
 	double EndRound();
 	bool ExecuteAction(int action, double& reward, OBS_TYPE& obs);

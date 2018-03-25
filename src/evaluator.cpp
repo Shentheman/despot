@@ -121,22 +121,28 @@ double EvalLog::GetRemainingBudget(string instance) const {
  * Evaluator class
  * =============================================================================*/
 
-Evaluator::Evaluator(DSPOMDP* model, string belief_type, Solver* solver,
-	clock_t start_clockt, ostream* out) :
-	model_(model),
-	belief_type_(belief_type),
-	solver_(solver),
-	start_clockt_(start_clockt),
-	target_finish_time_(-1),
-	out_(out) {
+Evaluator::Evaluator(
+    DSPOMDP* model, string belief_type, Solver* solver,
+    clock_t start_clockt, ostream* out)
+  : model_(model),
+    belief_type_(belief_type),
+    solver_(solver),
+    start_clockt_(start_clockt),
+    target_finish_time_(-1),
+    out_(out)
+{
 }
 
 Evaluator::~Evaluator() {
 }
 
 
-bool Evaluator::RunStep(int step, int round) {
-	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_) {
+bool Evaluator::RunStep(int step, int round)
+{
+  std::cout << "[Evaluator::RunStep()]" << std::endl;
+
+	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_)
+  {
 		if (!Globals::config.silence && out_)
 			*out_ << "Exit. (Total time "
 				<< (get_time_second() - EvalLog::curr_inst_start_time)
@@ -197,13 +203,16 @@ bool Evaluator::RunStep(int step, int round) {
 	end_t = get_time_second();
 
 	double step_end_t;
-	if (terminal) {
+	if (terminal)
+  {
 		step_end_t = get_time_second();
 		logi << "[RunStep] Time for step: actual / allocated = "
 			<< (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
 			<< endl;
 		if (!Globals::config.silence && out_)
+    {
 			*out_ << endl;
+    }
 		step_++;
 		return true;
 	}
@@ -211,6 +220,8 @@ bool Evaluator::RunStep(int step, int round) {
 	*out_<<endl;
 
 	start_t = get_time_second();
+
+  // update the belief
 	solver_->Update(action, obs);
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
@@ -500,16 +511,19 @@ void IPPCEvaluator::UpdateTimePerMove(double step_time) {
  * POMDPEvaluator class
  * =============================================================================*/
 
-POMDPEvaluator::POMDPEvaluator(DSPOMDP* model, string belief_type,
-	Solver* solver, clock_t start_clockt, ostream* out,
-	double target_finish_time, int num_steps) :
-	Evaluator(model, belief_type, solver, start_clockt, out),
-	random_((unsigned) 0) {
+POMDPEvaluator::POMDPEvaluator(
+    DSPOMDP* model, string belief_type,
+    Solver* solver, clock_t start_clockt, ostream* out,
+    double target_finish_time, int num_steps)
+  : Evaluator(model, belief_type, solver, start_clockt, out),
+    random_((unsigned) 0)
+{
 	target_finish_time_ = target_finish_time;
 
-	if (target_finish_time_ != -1) {
-		EvalLog::allocated_time = (target_finish_time_ - get_time_second())
-			/ num_steps;
+	if (target_finish_time_ != -1)
+  {
+		EvalLog::allocated_time
+        = (target_finish_time_ - get_time_second()) / num_steps;
 		Globals::config.time_per_move = EvalLog::allocated_time;
 		EvalLog::curr_inst_remaining_steps = num_steps;
 	}
@@ -522,14 +536,20 @@ int POMDPEvaluator::Handshake(string instance) {
 	return -1; // Not to be used
 }
 
-void POMDPEvaluator::InitRound() {
-	step_ = 0;
+void POMDPEvaluator::InitRound()
+{
+  std::cout<<"[POMDPEvaluator::InitRound()]"<<std::endl;
 
+	step_ = 0;
 	double start_t, end_t;
+
 	// Initial state
+  // TIGER: random initial state:
+  // state_ = (state_id = -1, weight = 4.51649e-307, text = RIGHT).
 	state_ = model_->CreateStartState();
 	logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
-	if (!Globals::config.silence && out_) {
+	if (!Globals::config.silence && out_)
+  {
 		*out_ << "Initial state: " << endl;
 		model_->PrintState(*state_, *out_);
 		*out_ << endl;
@@ -544,6 +564,18 @@ void POMDPEvaluator::InitRound() {
 
 	start_t = get_time_second();
 	Belief* belief = model_->InitialBelief(state_, belief_type_);
+  // cout << *belief << endl;
+  // TIGER:
+  // In Tiger class, we create 2 particles, left and right.
+  // Then ParticleBelief constructor will duplicate the 2 into a shuffled
+  // list of 4096 particles.
+  // All of these particles compose the initial belief.
+  // INFO: [ParticleBelief::ParticleBelief]
+  // Splitting 2 particles into 4096 particles.
+  // Number of particles in initial belief: 4096
+  // Sorted pdf for 4096 particles:
+  //   LEFT = 0.5
+  //   RIGHT = 0.5
 	end_t = get_time_second();
 	logi << "[POMDPEvaluator::InitRound] Created intial belief "
 		<< typeid(*belief).name() << " in " << (end_t - start_t) << "s" << endl;
@@ -566,7 +598,8 @@ double POMDPEvaluator::EndRound() {
 	return total_undiscounted_reward_;
 }
 
-bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
+bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs)
+{
 	double random_num = random_.NextDouble();
 	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
 

@@ -9,20 +9,22 @@ namespace despot {
  * VNode class
  * =============================================================================*/
 
-VNode::VNode(vector<State*>& particles, int depth, QNode* parent,
-	OBS_TYPE edge) :
-	particles_(particles),
-	belief_(NULL),
-	depth_(depth),
-	parent_(parent),
-	edge_(edge),
-	vstar(this),
-	likelihood(1) {
-	logd << "Constructed vnode with " << particles_.size() << " particles"
-		<< endl;
-	for (int i = 0; i < particles_.size(); i++) {
-		logd << " " << i << " = " << *particles_[i] << endl;
-	}
+VNode::VNode(vector<State*>& particles, int depth,
+    QNode* parent, OBS_TYPE edge)
+  : particles_(particles),
+    belief_(NULL),
+    depth_(depth),
+    parent_(parent),
+    edge_(edge),
+    vstar(this),
+    likelihood(1)
+{
+  logd << "Constructed vnode with " << particles_.size() << " particles"
+    << endl;
+  // for (int i = 0; i < particles_.size(); i++)
+  // {
+    // logd << " " << i << " = " << *particles_[i] << endl;
+  // }
 }
 
 VNode::VNode(Belief* belief, int depth, QNode* parent, OBS_TYPE edge) :
@@ -84,6 +86,7 @@ OBS_TYPE VNode::edge() {
 }
 
 double VNode::Weight() const {
+  // sum of the weights of all the particles in the state (defined in pomdp.h)
 	return State::Weight(particles_);
 }
 
@@ -267,6 +270,19 @@ void VNode::PrintTree(int depth, ostream& os) {
 	}
 }
 
+string VNode::text() const {
+	return "@VNode: [depth_=" + to_string(depth_)
+    + ", lower_bound_=" + to_string(lower_bound_)
+    + ", upper_bound_=" + to_string(upper_bound_)
+    + "]@";
+}
+ostream& operator<<(ostream& os, const VNode& x) {
+	os << (&x)->text();
+	return os;
+}
+
+
+
 /* =============================================================================
  * QNode class
  * =============================================================================*/
@@ -374,5 +390,19 @@ void QNode::value(double v) {
 double QNode::value() const {
 	return value_;
 }
+
+string QNode::text() const {
+	return "#QNode: [lower_bound_=" + to_string(lower_bound_)
+    + ", upper_bound_=" + to_string(upper_bound_)
+    + ", step_reward=" + to_string(step_reward)
+    + ", utility_upper_bound=" + to_string(utility_upper_bound)
+    + "]#";
+}
+ostream& operator<<(ostream& os, const QNode& x) {
+	os << (&x)->text();
+	return os;
+}
+
+
 
 } // namespace despot

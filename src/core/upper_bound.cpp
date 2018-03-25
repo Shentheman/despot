@@ -17,7 +17,19 @@ ScenarioUpperBound::~ScenarioUpperBound() {
 }
 
 void ScenarioUpperBound::Init(const RandomStreams& streams) {
+  cout << "[ScenarioUpperBound::Init()]" << endl;
 }
+
+string ScenarioUpperBound::text() const {
+	return "ScenarioUpperBound";
+}
+
+ostream& operator<<(ostream& os, const ScenarioUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
 
 /* =============================================================================
  * ParticleUpperBound
@@ -39,6 +51,16 @@ double ParticleUpperBound::Value(const vector<State*>& particles,
 	return value;
 }
 
+string ParticleUpperBound::text() const {
+	return "ParticleUpperBound";
+}
+
+ostream& operator<<(ostream& os, const ParticleUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
 /* =============================================================================
  * TrivialParticleUpperBound
  * =============================================================================*/
@@ -51,6 +73,12 @@ TrivialParticleUpperBound::~TrivialParticleUpperBound() {
 }
 
 double TrivialParticleUpperBound::Value(const State& state) const {
+  // Uninformed bound
+  // Assume the policy can always execute the actions with the highest
+  // rewards, so val = max_reward + max_reward * Discount
+  // + max_reward * Discount^2 + ...
+  // = max_reward * (1-Discount^infty) / (1-Discount)
+  // = max_reward / (1-Discount)
 	return model_->GetMaxReward() / (1 - Globals::Discount());
 }
 
@@ -58,6 +86,16 @@ double TrivialParticleUpperBound::Value(const vector<State*>& particles,
 	RandomStreams& streams, History& history) const {
 	return State::Weight(particles) * model_->GetMaxReward() / (1 - Globals::Discount());
 }
+
+string TrivialParticleUpperBound::text() const {
+	return "TrivialParticleUpperBound";
+}
+
+ostream& operator<<(ostream& os, const TrivialParticleUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
 
 /* =============================================================================
  * LookaheadUpperBound
@@ -74,6 +112,10 @@ void LookaheadUpperBound::Init(const RandomStreams& streams) {
 	int num_states = indexer_.NumStates();
 	int length = streams.Length();
 	int num_particles = streams.NumStreams();
+  cout << "[LookaheadUpperBound::Init()]" << endl;
+
+  cout << "num_states="<< num_states<<", length="<<length
+    <<", num_particles="<<num_particles<<endl;
 
 	SetSize(bounds_, num_particles, length + 1, num_states);
 
@@ -125,6 +167,18 @@ double LookaheadUpperBound::Value(const vector<State*>& particles,
 }
 
 
+string LookaheadUpperBound::text() const {
+	return "LookaheadUpperBound";
+}
+
+ostream& operator<<(ostream& os, const LookaheadUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
+
+
 /* =============================================================================
  * BeliefUpperBound
  * =============================================================================*/
@@ -135,6 +189,15 @@ BeliefUpperBound::BeliefUpperBound() {
 BeliefUpperBound::~BeliefUpperBound() {
 }
 
+string BeliefUpperBound::text() const {
+	return "BeliefUpperBound";
+}
+
+ostream& operator<<(ostream& os, const BeliefUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
 TrivialBeliefUpperBound::TrivialBeliefUpperBound(const DSPOMDP* model) :
 	model_(model) {
 }
@@ -142,6 +205,22 @@ TrivialBeliefUpperBound::TrivialBeliefUpperBound(const DSPOMDP* model) :
 double TrivialBeliefUpperBound::Value(const Belief* belief) const {
 	return model_->GetMaxReward() / (1 - Globals::Discount());
 }
+
+string TrivialBeliefUpperBound::text() const {
+	return "TrivialBeliefUpperBound";
+}
+
+ostream& operator<<(ostream& os, const TrivialBeliefUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
+
+
+
+
+
 
 /* =============================================================================
  * MDPUpperBound
@@ -170,5 +249,18 @@ double MDPUpperBound::Value(const Belief* belief) const {
 	}
 	return value;
 }
+
+string MDPUpperBound::text() const {
+	return "MDPUpperBound";
+}
+
+ostream& operator<<(ostream& os, const MDPUpperBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
+
+
 
 } // namespace despot

@@ -10,6 +10,7 @@ namespace despot {
  * SimpleState class
  * =============================================================================*/
 
+// XXX: Each state is also a particle
 class SimpleState: public State {
 public:
 	int rover_position; // positions are numbered 0, 1, 2 from left to right
@@ -70,6 +71,11 @@ public:
 	double GetMaxReward() const;
 	ScenarioUpperBound* CreateScenarioUpperBound(std::string name = "DEFAULT",
 		std::string particle_bound_name = "DEFAULT") const;
+
+  // Return (a,v) where a is an action with Largest Minimum immediate rewared
+  // when it is executed, and v is its minimum immediate rewared.
+  // Among the worst cases of all the actions,
+  // find the best action with its reward value.
 	ValuedAction GetMinRewardAction() const;
 	ScenarioLowerBound* CreateScenarioLowerBound(std::string name = "DEFAULT",
 		std::string particle_bound_name = "DEFAULT") const;
@@ -82,6 +88,7 @@ public:
 
 	/* Display.*/
 	void PrintState(const State& state, std::ostream& out = std::cout) const;
+  // print the weighted average of rock_status and rover_position
 	void PrintBelief(const Belief& belief, std::ostream& out = std::cout) const;
 	void PrintObs(const State& state, OBS_TYPE observation,
 		std::ostream& out = std::cout) const;

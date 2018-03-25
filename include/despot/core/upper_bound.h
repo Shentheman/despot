@@ -29,6 +29,10 @@ public:
 
 	virtual double Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const = 0;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const ScenarioUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -48,6 +52,10 @@ public:
 
 	virtual double Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const ParticleUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -65,6 +73,10 @@ public:
 
 	virtual double Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const TrivialParticleUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -74,6 +86,7 @@ public:
 class LookaheadUpperBound: public ScenarioUpperBound {
 protected:
 	const DSPOMDP* model_;
+  // Interface for a mapping between states and indices. In pomdp.h.
 	const StateIndexer& indexer_;
 	std::vector<std::vector<std::vector<double> > > bounds_;
 	ParticleUpperBound* particle_upper_bound_;
@@ -86,6 +99,10 @@ public:
 
 	double Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const LookaheadUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -98,6 +115,10 @@ public:
 	virtual ~BeliefUpperBound();
 
 	virtual double Value(const Belief* belief) const = 0;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const BeliefUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -111,6 +132,10 @@ public:
 	TrivialBeliefUpperBound(const DSPOMDP* model);
 
 	double Value(const Belief* belief) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const TrivialBeliefUpperBound& belief);
+	virtual std::string text() const;
 };
 
 /* =============================================================================
@@ -131,6 +156,10 @@ public:
 	double Value(const State& state) const;
 
 	double Value(const Belief* belief) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const MDPUpperBound& belief);
+	virtual std::string text() const;
 };
 
 } // namespace despot

@@ -46,6 +46,11 @@ public:
 	 */
 	virtual ValuedAction Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const = 0;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const ScenarioLowerBound& belief);
+	virtual std::string text() const;
+
 };
 
 /* =============================================================================
@@ -71,6 +76,12 @@ public:
 
 	ValuedAction Value(const std::vector<State*>& particles, RandomStreams& streams,
 		History& history) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const POMCPScenarioLowerBound& belief);
+	virtual std::string text() const;
+
+
 };
 
 /* =============================================================================
@@ -97,6 +108,12 @@ public:
 
 	ValuedAction Value(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const ParticleLowerBound& belief);
+	virtual std::string text() const;
+
+
 };
 
 /* =============================================================================
@@ -109,6 +126,12 @@ public:
 
 public:
 	virtual ValuedAction Value(const std::vector<State*>& particles) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const TrivialParticleLowerBound& belief);
+	virtual std::string text() const;
+
+
 };
 
 /* =============================================================================
@@ -127,6 +150,12 @@ public:
 	virtual void Learn(VNode* tree);
 
 	virtual ValuedAction Value(const Belief* belief) const = 0;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const BeliefLowerBound& belief);
+	virtual std::string text() const;
+
+
 };
 
 /* =============================================================================
@@ -138,6 +167,12 @@ public:
 	TrivialBeliefLowerBound(const DSPOMDP* model, Belief* belief = NULL);
 
 	virtual ValuedAction Value(const Belief* belief) const;
+
+	friend std::ostream& operator<<(
+      std::ostream& os, const TrivialBeliefLowerBound& belief);
+	virtual std::string text() const;
+
+
 };
 
 } // namespace despot

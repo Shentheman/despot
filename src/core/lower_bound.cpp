@@ -35,6 +35,7 @@ ScenarioLowerBound::ScenarioLowerBound(const DSPOMDP* model, Belief* belief) :
 }
 
 void ScenarioLowerBound::Init(const RandomStreams& streams) {
+  cout << "[ScenarioLowerBound::Init()]" << endl;
 }
 
 void ScenarioLowerBound::Reset() {
@@ -55,6 +56,17 @@ ValuedAction ScenarioLowerBound::Search() {
 
 void ScenarioLowerBound::Learn(VNode* tree) {
 }
+
+
+string ScenarioLowerBound::text() const {
+	return "ScenarioLowerBound";
+}
+
+ostream& operator<<(ostream& os, const ScenarioLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
 
 /* =============================================================================
  * POMCPScenarioLowerBound class
@@ -87,6 +99,17 @@ ValuedAction POMCPScenarioLowerBound::Value(const vector<State*>& particles,
 	return va;
 }
 
+
+string POMCPScenarioLowerBound::text() const {
+	return "POMCPScenarioLowerBound";
+}
+
+ostream& operator<<(ostream& os, const POMCPScenarioLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
 /* =============================================================================
  * ParticleLowerBound class
  * =============================================================================*/
@@ -100,6 +123,17 @@ ValuedAction ParticleLowerBound::Value(const vector<State*>& particles,
 	return Value(particles);
 }
 
+
+string ParticleLowerBound::text() const {
+	return "ParticleLowerBound";
+}
+
+ostream& operator<<(ostream& os, const ParticleLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
 /* =============================================================================
  * TrivialParticleLowerBound class
  * =============================================================================*/
@@ -110,10 +144,33 @@ TrivialParticleLowerBound::TrivialParticleLowerBound(const DSPOMDP* model) :
 
 ValuedAction TrivialParticleLowerBound::Value(
 	const vector<State*>& particles) const {
+  // Similar to 4.4 in the journal paper, we can develop a fixed-action policy.
+  // In this policy, we keep executing the action with the most immediate 
+  // reward.
+  // So the worst case is that we always get the min_reward of that action.
+  // va = min_reward + min_reward * Discount + min_reward * Discount^2 ...
+  //    = min_reward * (1-Discount^infty) / (1-Discount)
+  //    = min_reward / (1-Discount)
+  //
+  // The min_reward is the worst reward of the best action.
+  // So min_reward = Among the worst cases of all the actions,
+  // the best action with its reward value.
 	ValuedAction va = model_->GetMinRewardAction();
+  // We also multiply the total weight in particles to va.
 	va.value *= State::Weight(particles) / (1 - Globals::Discount());
 	return va;
 }
+
+
+string TrivialParticleLowerBound::text() const {
+	return "TrivialParticleLowerBound";
+}
+
+ostream& operator<<(ostream& os, const TrivialParticleLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
 
 /* =============================================================================
  * BeliefLowerBound class
@@ -130,6 +187,17 @@ ValuedAction BeliefLowerBound::Search() {
 void BeliefLowerBound::Learn(VNode* tree) {
 }
 
+
+string BeliefLowerBound::text() const {
+	return "BeliefLowerBound";
+}
+
+ostream& operator<<(ostream& os, const BeliefLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
+
 /* =============================================================================
  * TrivialBeliefLowerBound class
  * =============================================================================*/
@@ -144,5 +212,16 @@ ValuedAction TrivialBeliefLowerBound::Value(const Belief* belief) const {
 	va.value *= 1.0 / (1 - Globals::Discount());
 	return va;
 }
+
+
+string TrivialBeliefLowerBound::text() const {
+	return "TrivialBeliefLowerBound";
+}
+
+ostream& operator<<(ostream& os, const TrivialBeliefLowerBound& b) {
+	os << (&b)->text();
+	return os;
+}
+
 
 } // namespace despot

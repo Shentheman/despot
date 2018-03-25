@@ -82,6 +82,9 @@ public:
 
 	void PrintTree(int depth = -1, std::ostream& os = std::cout);
 	void PrintPolicyTree(int depth = -1, std::ostream& os = std::cout);
+	friend std::ostream& operator<<(std::ostream& os, const VNode& x);
+	virtual std::string text() const;
+
 
 	void Free(const DSPOMDP& model);
 };
@@ -96,6 +99,7 @@ public:
 class QNode {
 protected:
 	VNode* parent_;
+  // edge is the action that transits from parent_ to this.
 	int edge_;
 	std::map<OBS_TYPE, VNode*> children_;
 	double lower_bound_;
@@ -136,6 +140,11 @@ public:
 	int count() const;
 	void value(double v);
 	double value() const;
+
+	friend std::ostream& operator<<(std::ostream& os, const QNode& x);
+	virtual std::string text() const;
+
+
 };
 
 } // namespace despot

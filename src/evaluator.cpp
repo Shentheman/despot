@@ -343,6 +343,7 @@ int IPPCEvaluator::Handshake(string instance) {
 }
 
 void IPPCEvaluator::InitRound() {
+  std::cout<<"[IPPCEvaluator::InitRound()]"<<std::endl;
 	step_ = 0;
 	state_ = NULL;
 
@@ -547,6 +548,8 @@ void POMDPEvaluator::InitRound()
   // TIGER: random initial state:
   // state_ = (state_id = -1, weight = 4.51649e-307, text = RIGHT).
 	state_ = model_->CreateStartState();
+
+  cout << "model create start state =\n" << state_->text() << endl;
 	logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
 	if (!Globals::config.silence && out_)
   {
@@ -564,6 +567,9 @@ void POMDPEvaluator::InitRound()
 
 	start_t = get_time_second();
 	Belief* belief = model_->InitialBelief(state_, belief_type_);
+  cout<< "here111111111" << endl;
+    exit(0);
+
   // cout << *belief << endl;
   // TIGER:
   // In Tiger class, we create 2 particles, left and right.

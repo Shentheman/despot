@@ -291,6 +291,7 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
       }
       simulator->solver(solver);
     }
+    cout << "before initround" << endl;
 
     // Initialize initial state, initial belief,
     // assign the initial belief to solver.

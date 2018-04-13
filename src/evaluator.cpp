@@ -567,8 +567,6 @@ void POMDPEvaluator::InitRound()
 
 	start_t = get_time_second();
 	Belief* belief = model_->InitialBelief(state_, belief_type_);
-  cout<< "here111111111" << endl;
-    exit(0);
 
   // cout << *belief << endl;
   // TIGER:

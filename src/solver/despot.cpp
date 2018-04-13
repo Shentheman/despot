@@ -401,6 +401,7 @@ ValuedAction DESPOT::Search()
 
 	double start = get_time_second();
 	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
+  cout << "we sample " << Globals::config.num_scenarios << " scenarios.";
   // for (int i = 0; i < particles.size(); i ++)
   // {
     // cout << "particles[" << i << "]: " << *particles[i] << endl;
@@ -456,6 +457,8 @@ ValuedAction DESPOT::Search()
   // Stream 1: 0.357293 0.184858 0.107582 0.610372 0.336558 ... 0.871826 
   // ...
   // Stream 499: 0.357293 0.184858 0.107582 0.610372 0.336558 ... 0.871826 
+  cout<< "here111111111" << endl;
+    exit(0);
 
   // TIGER:
   // upper_bound_ = TrivialParticleUpperBound

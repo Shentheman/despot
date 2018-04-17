@@ -216,6 +216,7 @@ VNode* DESPOT::ConstructTree(
   logd << "[DESPOT::ConstructTree] START - Initializing lower and "
     "upper bounds at the root node.";
 	InitBounds(root, lower_bound, upper_bound, streams, history);
+
     exit(0);
   logd << "[DESPOT::ConstructTree] END - Initializing lower and "
     "upper bounds at the root node.";

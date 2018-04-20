@@ -197,13 +197,15 @@ VNode* DESPOT::ConstructTree(
 	}
 
   cout << model->NumActiveParticles() << endl;
+  for (int i = 0; i < particles.size(); i++) {
+    particles[i]->scenario_id = i;
+  }
+
   // TIGER:
   // model->NumActiveParticles() = 4598
-
-	for (int i = 0; i < particles.size(); i++) {
-		particles[i]->scenario_id = i;
-    cout << "[" << i << "]" << *particles[i] << endl;
-	}
+  // for (int i = 0; i < particles.size(); i++) {
+    // cout << "[" << i << "]" << *particles[i] << endl;
+  // }
   // TIGER:
   // particles.size() = 500
 
@@ -302,11 +304,9 @@ void DESPOT::InitLowerBound(
   // For TrivialParticleLowerBound,
   // return the max min_reward action across all actions with its value
 	ValuedAction move = lower_bound->Value(vnode->particles(), streams, history);
-  cout<< "here111111111" << endl;
-  exit(0);
-
   cout << "At depth=" << vnode->depth() << ", lower_bound (action, value) ="
     << move << endl;
+
   // TIGER:
   // The max min_reward action is LISTEN. Its min_reward = -1.
   // So here -1 / 1-(discount=0.95) = -20
@@ -348,6 +348,8 @@ void DESPOT::InitUpperBound(
   // return the max_reward action across all actions with its value
 	double upper = upper_bound->Value(vnode->particles(), streams, history);
 
+  cout<< "here111111111" << endl;
+  exit(0);
   cout << "At depth=" << vnode->depth() << ", upper_bound value ="
     << upper << endl;
   // TIGER:
@@ -376,10 +378,12 @@ void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 	ScenarioUpperBound* upper_bound, RandomStreams& streams, History& history) {
   cout << "[DESPOT::InitBounds()]" << endl;
 
-	InitLowerBound(vnode, lower_bound, streams, history);
+  InitLowerBound(vnode, lower_bound, streams, history);
+
   cout<< "here111111111" << endl;
   exit(0);
 	InitUpperBound(vnode, upper_bound, streams, history);
+
 	if (vnode->upper_bound() < vnode->lower_bound()
 		// close gap because no more search can be done on leaf node
 		|| vnode->depth() == Globals::config.search_depth - 1) {

@@ -37,12 +37,14 @@ ValuedAction Policy::Value(const vector<State*>& particles,
 
 ValuedAction Policy::RecursiveValue(const vector<State*>& particles,
 	RandomStreams& streams, History& history) const {
+  cout << "Policy::RecursiveValue" << endl;
 	if (streams.Exhausted()
 		|| (history.Size() - initial_depth_
 			>= Globals::config.max_policy_sim_len)) {
 		return particle_lower_bound_->Value(particles);
 	} else {
 		int action = Action(particles, streams, history);
+    cout << action << endl;
 
 		double value = 0;
 
@@ -51,9 +53,20 @@ ValuedAction Policy::RecursiveValue(const vector<State*>& particles,
 		double reward;
 		for (int i = 0; i < particles.size(); i++) {
 			State* particle = particles[i];
+      cout << particle->scenario_id << endl;
+      cout << ">>>>>>>>>>>>>>>>>" << endl;
+      cout << streams.Entry(particle->scenario_id) << endl;
+      cout << "<<<<<<<<<<<<<<<<<<" << endl;
+      cout << *particle << endl;
+      cout << action << endl;
+      cout << reward << endl;
+      cout << obs << endl;
+	
 			bool terminal = model_->Step(*particle,
 				streams.Entry(particle->scenario_id), action, reward, obs);
 
+    cout << "DONE" << endl;
+    exit(0);
 			value += reward * particle->weight;
 
 			if (!terminal) {

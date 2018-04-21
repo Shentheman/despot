@@ -309,9 +309,6 @@ VNode* DESPOT::ConstructTree(
   while (used_time * (num_trials + 1.0) / num_trials < timeout
       && (root->upper_bound() - root->lower_bound()) > 1e-6);
 
-  ROS_ERROR_STREAM("???????");
-  exit(0);
-
 	if (statistics != NULL)
   {
 		statistics->num_particles_after_search = model->NumActiveParticles();

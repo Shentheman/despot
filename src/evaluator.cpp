@@ -164,6 +164,8 @@ bool Evaluator::RunStep(int step, int round)
 	logi << "[RunStep] Time spent in " << typeid(*solver_).name()
 		<< "::Search(): " << (end_t - start_t) << endl;
 
+ROS_ERROR_STREAM("astar="<<action);
+exit(0);
 	double reward;
 	OBS_TYPE obs;
 	start_t = get_time_second();

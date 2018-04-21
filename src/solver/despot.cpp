@@ -58,6 +58,8 @@ VNode* DESPOT::Trial(
 			break;
 		}
 
+    // If we are continuing building tree from the previous trial,
+    // then we will not expand here but only select the best action and obs.
 		if (cur->IsLeaf())
     {
 			double start = clock();
@@ -135,18 +137,22 @@ VNode* DESPOT::Trial(
 		history.Add(qstar->edge(), cur->edge());
 
     cout << "After an iteration, the new cur=" << *cur
-        << ", WEN=" << WEU(cur) << ", depth=" << cur->depth()
+        << ", WEU=" << WEU(cur) << ", depth=" << cur->depth()
         << ", particles:" << endl;
     for (const State* p: cur->particles())
     {
       cout << *p << endl;
     }
+    if (cur->depth() >= Globals::config.search_depth)
+      ROS_ERROR_STREAM("[DESPOT::Trial()] Exit the loop because "
+          << "(cur->depth() >= Globals::config.search_depth)"
+          << "\n==========================================\n");
+    if (WEU(cur) <= 0)
+      ROS_ERROR_STREAM("[DESPOT::Trial()] Exit the loop because WEU(cur) <= 0"
+          << "\n==========================================\n");
 
 	} while (cur->depth() < Globals::config.search_depth && WEU(cur) > 0);
 
-  WHY THE ROBOT ACTION SEQUENCe IS NOT ALWAYS DOING ACTION 1???????
-cout<< "Done with expand" << endl;
-exit(0);
   // resize history to the original size - hist_size
 	history.Truncate(hist_size);
 
@@ -159,7 +165,7 @@ void DESPOT::ExploitBlockers(VNode* vnode) {
     << Globals::config.pruning_constant << endl;
 
 	if (Globals::config.pruning_constant <= 0) {
-    cout << "return";
+    cout << "return" << endl;
 		return;
 	}
 
@@ -260,15 +266,18 @@ VNode* DESPOT::ConstructTree(
   // # nodes: expanded / total / policy = 0 / 0 / 0
   // # particles: initial / final / tree = 4598 / 0 / 0
 
+
 	double used_time = 0;
 	int num_trials = 0;
+  // for debug (timeout was 1 originally)
+  timeout = 100;
 	do
   {
+    ROS_ERROR_STREAM("TRIAL " << num_trials);
 		double start = clock();
 		VNode* cur = Trial(root, streams, lower_bound, upper_bound,
         model, history, statistics);
-    cout << "Done with trial" << endl;
-    exit(0);
+
 		used_time += double(clock() - start) / CLOCKS_PER_SEC;
 
 		start = clock();
@@ -279,10 +288,29 @@ VNode* DESPOT::ConstructTree(
 		}
 		used_time += double(clock() - start) / CLOCKS_PER_SEC;
 
+    // for debug
+    if (num_trials > 2)
+    {
+      ROS_ERROR_STREAM("DONE");
+      exit(0);
+    }
+
 		num_trials++;
+
+    if (used_time * (num_trials + 1.0) / num_trials >= timeout)
+      ROS_ERROR_STREAM("[DESPOT::ConstructTree()] Exit the loop because "
+          << "time is up (timeout=" << timeout << ")"
+          << "\n==========================================\n");
+    if (root->upper_bound() - root->lower_bound() <= 1e-6)
+      ROS_ERROR_STREAM("[DESPOT::ConstructTree()] Exit the loop because "
+          << "root->upper_bound() - root->lower_bound() <= 1e-6"
+          << "\n==========================================\n");
 	}
   while (used_time * (num_trials + 1.0) / num_trials < timeout
       && (root->upper_bound() - root->lower_bound()) > 1e-6);
+
+  ROS_ERROR_STREAM("???????");
+  exit(0);
 
 	if (statistics != NULL)
   {
@@ -820,8 +848,8 @@ QNode* DESPOT::SelectBestUpperBoundNode(VNode* vnode)
 
 void DESPOT::Update(VNode* vnode)
 {
-  // cout << "[DESPOT::Update for VNode]" << endl;
-  // cout << "Before update the bounds, vnode=" << *vnode << endl;
+  ROS_WARN_STREAM("[DESPOT::Update for VNode]");
+  cout << "Before update the bounds, vnode=" << *vnode << endl;
 
 	if (vnode->IsLeaf())
   {
@@ -868,7 +896,7 @@ void DESPOT::Update(VNode* vnode)
 		vnode->utility_upper_bound = utility_upper;
 	}
 
-  // cout << "After update the bounds, vnode=" << *vnode << endl;
+  cout << "After update the bounds, vnode=" << *vnode << endl;
   // TIGER:
   // Before update the bounds, vnode=@VNode:
   // [depth_=0, lower_bound_=-20, upper_bound_=200]@
@@ -896,7 +924,7 @@ void DESPOT::Update(VNode* vnode)
 void DESPOT::Update(QNode* qnode)
 {
   cout << "[DESPOT::Update for QNode]" << endl;
-  // cout << "Before update the bounds, qnode=" << *qnode << endl;
+  cout << "Before update the bounds, qnode=" << *qnode << endl;
 
 	double lower = qnode->step_reward;
 	double upper = qnode->step_reward;
@@ -925,7 +953,7 @@ void DESPOT::Update(QNode* qnode)
 	if (utility_upper < qnode->utility_upper_bound) {
 		qnode->utility_upper_bound = utility_upper;
 	}
-  // cout << "After update the bounds, qnode=" << *qnode << endl;
+  cout << "After update the bounds, qnode=" << *qnode << endl;
 
   // TIGER:
   // Before update the bounds, qnode=#QNode:

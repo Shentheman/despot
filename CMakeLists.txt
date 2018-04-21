@@ -38,6 +38,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 # (https://cmake.org/Wiki/CMake:How_To_Find_Libraries)
 
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   cpp_utils
 )
 
@@ -71,7 +72,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS cpp_utils
+  CATKIN_DEPENDS cpp_utils roscpp
   DEPENDS
   CFG_EXTRAS
 )

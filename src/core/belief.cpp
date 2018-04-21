@@ -29,8 +29,7 @@ ostream& operator<<(ostream& os, const Belief& x) {
 
 vector<State*> Belief::Sample(int num, vector<State*> particles,
 	const DSPOMDP* model) {
-  cout << "[Belief::Sample()] From " << particles.size()
-    << " particles, we will sample num="<<num << endl;
+  ROS_WARN_STREAM("[Belief::Sample]");
 
   // The weight of each sample
 	double unit = 1.0 / num;
@@ -326,6 +325,7 @@ ParticleBelief::ParticleBelief(vector<State*> particles, const DSPOMDP* model,
 	split_(split),
 	state_indexer_(NULL) {
 
+  ROS_WARN_STREAM("[ParticleBelief::ParticleBelief]");
 	if (fabs(State::Weight(particles) - 1.0) > 1e-6) {
 		loge << "[ParticleBelief::ParticleBelief] Particle weights sum to " << State::Weight(particles) << " instead of 1" << endl;
 		exit(1);

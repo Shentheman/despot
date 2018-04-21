@@ -12,6 +12,9 @@
 #include <despot/util/seeds.h>
 #include <despot/util/util.h>
 
+// For colorful print
+#include <ros/ros.h>
+
 namespace despot {
 
 /* =============================================================================

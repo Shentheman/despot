@@ -35,7 +35,7 @@ ScenarioLowerBound::ScenarioLowerBound(const DSPOMDP* model, Belief* belief) :
 }
 
 void ScenarioLowerBound::Init(const RandomStreams& streams) {
-  cout << "[ScenarioLowerBound::Init()]" << endl;
+  ROS_WARN_STREAM("[ScenarioLowerBound::Init]");
 }
 
 void ScenarioLowerBound::Reset() {

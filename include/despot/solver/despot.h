@@ -181,6 +181,11 @@ protected:
    * WEU - Weighted Excess Utility - equation (11) in the jair17 paper.
    * It measures the difference between the current gap and the "expected"
    * gap if the target gap at the root is satisfied.
+   *
+   * Note that WEU is positively proporsional to vnode->Weight() which is the
+   * total weight of all the particles in the vnode. If the Gap of vnode
+   * can cover "the number of these particles" amounts of xi*Gap(root),
+   * we are good and break the do-while loop of DESPOT::Trial.
    */
 	static double WEU(VNode* vnode);
 	static double WEU(VNode* vnode, double epsilon);

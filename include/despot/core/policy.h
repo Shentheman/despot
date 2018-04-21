@@ -46,6 +46,11 @@ private:
 	mutable int initial_depth_;
 	ParticleLowerBound* particle_lower_bound_;
 
+  /*
+   * Here we take the best action a = Action() based on the policy itself.
+   * Then compute the Q-value of a = \sum_particle R(s,a) + \gamma * Value(s')
+   * where particle decides s, o, s'.
+   */
 	ValuedAction RecursiveValue(const std::vector<State*>& particles,
 		RandomStreams& streams, History& history) const;
 

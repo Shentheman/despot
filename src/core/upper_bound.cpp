@@ -17,7 +17,7 @@ ScenarioUpperBound::~ScenarioUpperBound() {
 }
 
 void ScenarioUpperBound::Init(const RandomStreams& streams) {
-  cout << "[ScenarioUpperBound::Init()]" << endl;
+  ROS_WARN_STREAM("[ScenarioUpperBound::Init]");
 }
 
 string ScenarioUpperBound::text() const {
@@ -109,6 +109,8 @@ LookaheadUpperBound::LookaheadUpperBound(const DSPOMDP* model,
 }
 
 void LookaheadUpperBound::Init(const RandomStreams& streams) {
+  ROS_WARN_STREAM("[LookaheadUpperBound::Init]");
+
 	int num_states = indexer_.NumStates();
 	int length = streams.Length();
 	int num_particles = streams.NumStreams();

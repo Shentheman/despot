@@ -139,7 +139,7 @@ Evaluator::~Evaluator() {
 
 bool Evaluator::RunStep(int step, int round)
 {
-  std::cout << "[Evaluator::RunStep()]" << std::endl;
+  ROS_WARN_STREAM("[Evaluator::RunStep]");
 
 	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_)
   {
@@ -539,7 +539,7 @@ int POMDPEvaluator::Handshake(string instance) {
 
 void POMDPEvaluator::InitRound()
 {
-  std::cout<<"[POMDPEvaluator::InitRound()]"<<std::endl;
+  ROS_WARN_STREAM("[POMDPEvaluator::InitRound()]");
 
 	step_ = 0;
 	double start_t, end_t;
@@ -549,8 +549,7 @@ void POMDPEvaluator::InitRound()
   // state_ = (state_id = -1, weight = 4.51649e-307, text = RIGHT).
 	state_ = model_->CreateStartState();
 
-  cout << "model create start state =\n" << state_->text() << endl;
-	logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
+  logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
 	if (!Globals::config.silence && out_)
   {
 		*out_ << "Initial state: " << endl;
@@ -581,7 +580,7 @@ void POMDPEvaluator::InitRound()
   //   LEFT = 0.5
   //   RIGHT = 0.5
 	end_t = get_time_second();
-	logi << "[POMDPEvaluator::InitRound] Created intial belief "
+	logi << "[POMDPEvaluator::InitRound] Created initial belief "
 		<< typeid(*belief).name() << " in " << (end_t - start_t) << "s" << endl;
 
 	solver_->belief(belief);

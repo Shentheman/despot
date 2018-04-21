@@ -30,7 +30,7 @@ VNode* DESPOT::Trial(
     ScenarioLowerBound* lower_bound, ScenarioUpperBound* upper_bound,
     const DSPOMDP* model, History& history, SearchStatistics* statistics)
 {
-  cout << "[DESPOT::Trial()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::Trial()]");
 
 	VNode* cur = root;
 
@@ -50,8 +50,8 @@ VNode* DESPOT::Trial(
     // TIGER: 0
 
 		ExploitBlockers(cur);
-
-    cout << "Gap(cur)=" << Gap(cur) << endl;
+	
+    cout << "[DESPOT::Trial] Gap(cur)=" << Gap(cur) << endl;
     // TIGER: 220
 		if (Gap(cur) == 0)
     {
@@ -73,6 +73,7 @@ VNode* DESPOT::Trial(
 		}
 
     root->PrintTree();
+    cout << endl;
     // TIGER:
     // a - action
     // o - observation
@@ -104,17 +105,21 @@ VNode* DESPOT::Trial(
     // | o=0: 0x130d9a0-a=2
     // | o=1: 0x130e720-a=2
 
+    // 1. Select the action which could produce the best upper_bound_ of QNode.
 		double start = clock();
 		QNode* qstar = SelectBestUpperBoundNode(cur);
-    cout << "The QNode with the best upper_bound_ = " << *qstar << endl;
+    ROS_ERROR_STREAM("The QNode with the best upper_bound_ = " << *qstar
+        << ", action=" << qstar->edge());
     // TIGER:
     // #QNode: [lower_bound_=-20, upper_bound_=189, step_reward=-1,
     // utility_upper_bound=189]#
     // Note that the upper_bound of the qnode is
     // reward + value of successive vnode from this qnode.
 
+    // 2. Then select the observation which could generate the max WEU.
 		VNode* next = SelectBestWEUNode(qstar);
-    cout << "The vnode with best WEU = " << *next << endl;
+    ROS_ERROR_STREAM("The vnode with max WEU = " << *next
+        << ", observation=" << next->edge());
     // TIGER:
     // @VNode: [depth_=1, lower_bound_=-9.462, upper_bound_=94.62]@
 
@@ -129,10 +134,19 @@ VNode* DESPOT::Trial(
 		cur = next;
 		history.Add(qstar->edge(), cur->edge());
 
-    cout << "cur=" << *cur << "\nWEN(cur)=" << WEU(cur)
-        << ", depth=" << cur->depth() << endl;
+    cout << "After an iteration, the new cur=" << *cur
+        << ", WEN=" << WEU(cur) << ", depth=" << cur->depth()
+        << ", particles:" << endl;
+    for (const State* p: cur->particles())
+    {
+      cout << *p << endl;
+    }
+
 	} while (cur->depth() < Globals::config.search_depth && WEU(cur) > 0);
 
+  WHY THE ROBOT ACTION SEQUENCe IS NOT ALWAYS DOING ACTION 1???????
+cout<< "Done with expand" << endl;
+exit(0);
   // resize history to the original size - hist_size
 	history.Truncate(hist_size);
 
@@ -140,11 +154,12 @@ VNode* DESPOT::Trial(
 }
 
 void DESPOT::ExploitBlockers(VNode* vnode) {
-  cout << "[DESPOT::ExploitBlockers()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::ExploitBlockers]");
   cout << "Globals::config.pruning_constant="
     << Globals::config.pruning_constant << endl;
 
 	if (Globals::config.pruning_constant <= 0) {
+    cout << "return";
 		return;
 	}
 
@@ -190,19 +205,28 @@ VNode* DESPOT::ConstructTree(
     const DSPOMDP* model, History& history, double timeout,
     SearchStatistics* statistics)
 {
-  cout << "[DESPOT::ConstructTree()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::ConstructTree()]");
 
 	if (statistics != NULL) {
 		statistics->num_particles_before_search = model->NumActiveParticles();
 	}
 
-  cout << model->NumActiveParticles() << endl;
   for (int i = 0; i < particles.size(); i++) {
     particles[i]->scenario_id = i;
   }
 
+  // cout << model->NumActiveParticles() << endl;
   // TIGER:
+  // In the beginning inside [SimpleRockSample::InitialBelief()],
+  // we Allocate() 2 particles,
+  // and then use `new ParticleBelief(particles, this);` to split
+  // the 2 into 4096 particles. But we don't remove them from the memory,
+  // so now we have 4098 particles.
+  // Now we sample 500 particles from the 4096 particles in ParticleBelief,
+  // again we will not remove the previous 4098 particles from the memory,
+  // so now we have 4098 + 500 = 4598 particles.
   // model->NumActiveParticles() = 4598
+
   // for (int i = 0; i < particles.size(); i++) {
     // cout << "[" << i << "]" << *particles[i] << endl;
   // }
@@ -219,7 +243,6 @@ VNode* DESPOT::ConstructTree(
     "upper bounds at the root node.";
 	InitBounds(root, lower_bound, upper_bound, streams, history);
 
-    exit(0);
   logd << "[DESPOT::ConstructTree] END - Initializing lower and "
     "upper bounds at the root node.";
 
@@ -227,7 +250,8 @@ VNode* DESPOT::ConstructTree(
 		statistics->initial_lb = root->lower_bound();
 		statistics->initial_ub = root->upper_bound();
 	}
-  cout << "After initializing bonuds, statistics=\n" << *statistics << endl;
+  cout << "[DESPOT::ConstructTree] After initializing bonuds, statistics=\n"
+    << *statistics << endl;
   // After initializing bonuds, statistics=
   // Initial bounds: (-20, 200)
   // Final bounds: (-inf, inf)
@@ -243,6 +267,8 @@ VNode* DESPOT::ConstructTree(
 		double start = clock();
 		VNode* cur = Trial(root, streams, lower_bound, upper_bound,
         model, history, statistics);
+    cout << "Done with trial" << endl;
+    exit(0);
 		used_time += double(clock() - start) / CLOCKS_PER_SEC;
 
 		start = clock();
@@ -291,7 +317,7 @@ void DESPOT::InitLowerBound(
     VNode* vnode, ScenarioLowerBound* lower_bound,
     RandomStreams& streams, History& history)
 {
-  cout << "[DESPOT::InitLowerBound()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::InitLowerBound]");
 
   cout << "Old vnode=" << *vnode << endl;
   // TIGER:
@@ -314,6 +340,7 @@ void DESPOT::InitLowerBound(
 
   // We assume the vnode->particles() has depth 0 in lower_bound->Value(),
   // so now we need to multiple the discount again.
+  // Here if the vnode is the root, then vnode->depth() == 0 here.
 	move.value *= Globals::Discount(vnode->depth());
 
   cout << "After discounted, (action, value)=" << move << endl;
@@ -334,7 +361,7 @@ void DESPOT::InitUpperBound(
     VNode* vnode, ScenarioUpperBound* upper_bound,
     RandomStreams& streams, History& history)
 {
-  cout << "[DESPOT::InitUpperBound()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::InitUpperBound]");
 
   cout << "Old vnode=" << *vnode << endl;
   // TIGER:
@@ -348,8 +375,6 @@ void DESPOT::InitUpperBound(
   // return the max_reward action across all actions with its value
 	double upper = upper_bound->Value(vnode->particles(), streams, history);
 
-  cout<< "here111111111" << endl;
-  exit(0);
   cout << "At depth=" << vnode->depth() << ", upper_bound value ="
     << upper << endl;
   // TIGER:
@@ -376,12 +401,9 @@ void DESPOT::InitUpperBound(
 
 void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 	ScenarioUpperBound* upper_bound, RandomStreams& streams, History& history) {
-  cout << "[DESPOT::InitBounds()]" << endl;
+  ROS_WARN_STREAM("[DESPOT::InitBounds]");
 
   InitLowerBound(vnode, lower_bound, streams, history);
-
-  cout<< "here111111111" << endl;
-  exit(0);
 	InitUpperBound(vnode, upper_bound, streams, history);
 
 	if (vnode->upper_bound() < vnode->lower_bound()
@@ -389,11 +411,12 @@ void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 		|| vnode->depth() == Globals::config.search_depth - 1) {
 		vnode->upper_bound(vnode->lower_bound());
 	}
+  ROS_ERROR_STREAM("[DESPOT::InitBounds]: New vnode=" << *vnode);
 }
 
 ValuedAction DESPOT::Search()
 {
-  cout<<"[DESPOT::Search()]"<<endl;
+  ROS_WARN_STREAM("[DESPOT::Search]");
 
   // TIGER:
   // Sorted pdf for 4096 particles:
@@ -401,6 +424,7 @@ ValuedAction DESPOT::Search()
   //   RIGHT = 0.5
   // cout << *belief_ << endl;
 
+  cout << "PrintBelief:" << endl;
 	if (logging::level() >= logging::DEBUG)
     model_->PrintBelief(*belief_);
 
@@ -413,8 +437,14 @@ ValuedAction DESPOT::Search()
   }
 
 	double start = get_time_second();
+
+// for debug:
+// Here we only sample 1 particle
+Globals::config.num_scenarios = 1;
+
 	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
-  cout << "we sample " << Globals::config.num_scenarios << " scenarios.";
+  cout << "We sample " << Globals::config.num_scenarios << " scenarios." << endl;
+
   // for (int i = 0; i < particles.size(); i ++)
   // {
     // cout << "particles[" << i << "]: " << *particles[i] << endl;
@@ -458,7 +488,7 @@ ValuedAction DESPOT::Search()
 	start = get_time_second();
 	static RandomStreams streams = RandomStreams(Globals::config.num_scenarios,
 		Globals::config.search_depth);
-  cout << "create num_scenarios=" << Globals::config.num_scenarios
+  cout << "Create num_scenarios=" << Globals::config.num_scenarios
     << " RandomStreams and each has length search_depth="
     << Globals::config.search_depth<< endl;
   // cout << streams << endl;
@@ -547,6 +577,7 @@ double DESPOT::CheckDESPOT(const VNode* vnode, double regularized_value) {
 	do {
 		double start = clock();
 		VNode* cur = Trial(root, streams, lower_bound_, upper_bound_, model_, history_);
+
 		num_trials++;
 		used_time += double(clock() - start) / CLOCKS_PER_SEC;
 
@@ -741,12 +772,14 @@ double DESPOT::WEU(VNode* vnode, double xi) {
 	while (root->parent() != NULL) {
 		root = root->parent()->parent();
 	}
+  // vnode->Weight() is the weight of vnode, not root.
+  // xi is a parameter.
 	return Gap(vnode) - xi * vnode->Weight() * Gap(root);
 }
 
 VNode* DESPOT::SelectBestWEUNode(QNode* qnode)
 {
-  cout << "[DESPOT::SelectBestWEUNode]" << endl;
+  // ROS_WARN_STREAM("[DESPOT::SelectBestWEUNode]");
 	double weustar = Globals::NEG_INFTY;
 	VNode* vstar = NULL;
 	map<OBS_TYPE, VNode*>& children = qnode->children();
@@ -768,8 +801,7 @@ VNode* DESPOT::SelectBestWEUNode(QNode* qnode)
 
 QNode* DESPOT::SelectBestUpperBoundNode(VNode* vnode)
 {
-  cout << "[DESPOT::SelectBestUpperBoundNode]" << endl;
-
+  // ROS_WARN_STREAM("[DESPOT::SelectBestUpperBoundNode]");
 	int astar = -1;
 	double upperstar = Globals::NEG_INFTY;
 	for (int action = 0; action < vnode->children().size(); action++)
@@ -968,7 +1000,7 @@ void DESPOT::Expand(
     const DSPOMDP* model, RandomStreams& streams,
     History& history)
 {
-  cout << "[DESPOT::Expand() for VNode]" << endl;
+  ROS_WARN_STREAM("[DESPOT::Expand(VNode)]");
 
   // Now children is empty.
   // Note that the children here is a reference to the
@@ -983,7 +1015,8 @@ void DESPOT::Expand(
   // Here we will expand all the possible actions:
 	for (int action = 0; action < model->NumActions(); action++)
   {
-    logd << " actions[" << action << "]" << endl;
+    // logd << " actions[" << action << "]:" << endl;
+    ROS_ERROR_STREAM("actions[" << action << "]:");
 
     // The qnode's parent is vnode, and the edge between the qnode and vnode
     // is the action.
@@ -1002,7 +1035,7 @@ void DESPOT::Expand(
     RandomStreams& streams,
     History& history)
 {
-  cout << "\n[DESPOT::Expand() for QNode]" << endl;
+  ROS_WARN_STREAM("[DESPOT::Expand(QNode)]");
   cout << "Before creating new vnodes as children, qnode=" << *qnode << endl;
   // TIGER:
   // Before creating new vnodes as children, qnode=#QNode:
@@ -1085,8 +1118,6 @@ void DESPOT::Expand(
 		}
 	}
 
-  cout << "step_reward averaged across all the particles = "
-    << step_reward << endl;
   // TIGER:
   // step_reward averaged across all the particles = -43.24
   // XXX: action0 = LEFT.
@@ -1099,14 +1130,14 @@ void DESPOT::Expand(
     //pruning_constant is used for regularization
     - Globals::config.pruning_constant;
 
-  cout << "At depth=" << parent->depth()
+  ROS_ERROR_STREAM("At depth=" << parent->depth()
     << ", Globals::Discount(depth)=" << Globals::Discount(parent->depth())
     << ", Globals::config.pruning_constant="
     << Globals::config.pruning_constant
-    << ", step_reward=" << step_reward << endl;
+    << ", step_reward from all particles=" << step_reward);
   // At depth=0, Globals::Discount(depth)=1,
   // Globals::config.pruning_constant=0, step_reward=-43.24
-
+	
   // XXX: Here we add step_reward to lower_bound:
   // Q_value = Reward + gamma * Value
 	double lower_bound = step_reward;
@@ -1132,7 +1163,7 @@ void DESPOT::Expand(
 
     cout << "partitions[" << counter << "]: obs=" << obs
       << ", action=" << qnode->edge() << ", "
-      << it->second.size() << " particles=" << endl;
+      << it->second.size() << " particles=" << *vnode << endl;
     counter ++;
     // for (State* s: it->second)
     // {
@@ -1167,8 +1198,8 @@ void DESPOT::Expand(
 		InitBounds(vnode, lb, ub, streams, history);
 		history.RemoveLast();
 
-    logd << " New node's bounds: (" << vnode->lower_bound() << ", "
-      << vnode->upper_bound() << ")" << endl;
+    // logd << " New node's bounds: (" << vnode->lower_bound() << ", "
+      // << vnode->upper_bound() << ")" << endl;
     // TIGER:
     // [DESPOT::InitBounds()]
     //
@@ -1189,6 +1220,8 @@ void DESPOT::Expand(
     // New vnode=@VNode: [depth_=1, lower_bound_=-19, upper_bound_=190]@
     // DEBUG:  New node's bounds: (-19, 190)
 
+    // These bounds are already discounted. So we can directly add reward
+    // to the bounds.
 		lower_bound += vnode->lower_bound();
 		upper_bound += vnode->upper_bound();
 	}
@@ -1199,7 +1232,7 @@ void DESPOT::Expand(
 
 	qnode->default_value = lower_bound; // for debugging
 
-  cout << "After creating new vnodes as children, qnode=" << *qnode << endl;
+  ROS_ERROR_STREAM("After creating new vnodes as children, qnode=" << *qnode);
   // TIGER:
   // After creating new vnodes as children, qnode=#QNode:
   // [lower_bound_=-62.24, upper_bound_=145.66, step_reward=-43.24,
@@ -1207,6 +1240,7 @@ void DESPOT::Expand(
   // qnode.lower_bound_ = -19 + -43.24
   // qnode.upper_bound_ = -190 + -43.24
 }
+
 
 ValuedAction DESPOT::Evaluate(VNode* root, vector<State*>& particles,
 	RandomStreams& streams, POMCPPrior* prior, const DSPOMDP* model) {
@@ -1268,6 +1302,7 @@ ValuedAction DESPOT::Evaluate(VNode* root, vector<State*>& particles,
 }
 
 void DESPOT::belief(Belief* b) {
+  ROS_WARN_STREAM("[DESPOT::belief]");
 	logi << "[DESPOT::belief] Start: Set initial belief." << endl;
 	belief_ = b;
 	history_.Truncate(0);

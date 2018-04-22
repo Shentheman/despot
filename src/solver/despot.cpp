@@ -289,11 +289,11 @@ VNode* DESPOT::ConstructTree(
 		used_time += double(clock() - start) / CLOCKS_PER_SEC;
 
     // for debug
-    if (num_trials > 2)
-    {
-      ROS_ERROR_STREAM("DONE");
-      exit(0);
-    }
+    // if (num_trials > 2)
+    // {
+      // ROS_ERROR_STREAM("[DESPOT::ConstructTree] DONE");
+      // exit(0);
+    // }
 
 		num_trials++;
 

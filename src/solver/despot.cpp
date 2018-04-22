@@ -285,7 +285,7 @@ VNode* DESPOT::ConstructTree(
 	double used_time = 0;
 	int num_trials = 0;
   // for debug (timeout was 1 originally)
-  timeout = 100;
+  timeout = 5;
 	do
   {
     ROS_ERROR_STREAM("TRIAL " << num_trials);
@@ -526,10 +526,10 @@ Globals::config.num_scenarios = 1;
 
 	start = get_time_second();
 	static RandomStreams streams = RandomStreams(Globals::config.num_scenarios,
-		Globals::config.search_depth);
+      Globals::config.search_depth);
   cout << "Create num_scenarios=" << Globals::config.num_scenarios
-    << " RandomStreams and each has length search_depth="
-    << Globals::config.search_depth<< endl;
+      << " RandomStreams and each has length search_depth="
+      << Globals::config.search_depth<< endl;
   // cout << streams << endl;
   // TIGER:
   // Create num_scenarios=500 RandomStreams

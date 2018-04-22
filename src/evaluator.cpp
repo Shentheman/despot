@@ -171,9 +171,8 @@ bool Evaluator::RunStep(int step, int round)
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
+  ROS_ERROR_STREAM("astar="<<action);
 
-ROS_ERROR_STREAM("astar="<<action);
-exit(0);
 	start_t = get_time_second();
 	*out_ << "-----------------------------------Round " << round
 				<< " Step " << step << "-----------------------------------"
@@ -200,6 +199,8 @@ exit(0);
 			*out_ << "- ObsProb = " << model_->ObsProb(obs, *state_, action)
 				<< endl;
 	}
+ROS_ERROR_STREAM("DONE in Evaluator::RunStep");
+exit(0);
 
 	ReportStepReward();
 	end_t = get_time_second();
@@ -615,11 +616,12 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs)
 	double random_num = random_.NextDouble();
 	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
 
-  exit(0);
-
 	reward_ = reward;
 	total_discounted_reward_ += Globals::Discount(step_) * reward;
 	total_undiscounted_reward_ += reward;
+  ROS_INFO_STREAM("total_discounted_reward_+="
+      << Globals::Discount(step_) * reward
+      << "\ntotal_undiscounted_reward_+=" << reward);
 
 	return terminal;
 }

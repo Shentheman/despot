@@ -164,8 +164,6 @@ bool Evaluator::RunStep(int step, int round)
 	logi << "[RunStep] Time spent in " << typeid(*solver_).name()
 		<< "::Search(): " << (end_t - start_t) << endl;
 
-ROS_ERROR_STREAM("astar="<<action);
-exit(0);
 	double reward;
 	OBS_TYPE obs;
 	start_t = get_time_second();
@@ -174,6 +172,8 @@ exit(0);
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
 
+ROS_ERROR_STREAM("astar="<<action);
+exit(0);
 	start_t = get_time_second();
 	*out_ << "-----------------------------------Round " << round
 				<< " Step " << step << "-----------------------------------"
@@ -605,8 +605,17 @@ double POMDPEvaluator::EndRound() {
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs)
 {
+  ROS_WARN_STREAM("[POMDPEvaluator::ExecuteAction]");
+
+  // We have to call executeAction before Step because executeAction
+  // needs to use the current robot state.
+  const double robot_execution_time = 1.0;
+  model_->executeAction(*state_, action, robot_execution_time);
+
 	double random_num = random_.NextDouble();
 	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
+
+  exit(0);
 
 	reward_ = reward;
 	total_discounted_reward_ += Globals::Discount(step_) * reward;

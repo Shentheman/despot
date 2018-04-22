@@ -122,6 +122,17 @@ public:
 	virtual bool Step(State& state, int action, double& reward,
 		OBS_TYPE& obs) const;
 
+	/**
+	 * Real execution model for POMDP (Shen Li).
+	 * If the virtual function is implemented in cpp, then not all of
+	 * the child classes have to declare and implement this virtual function.
+	 * If it is not implemented, then all the child classes have to
+	 * declare and implement the virtual function.
+	 * https://stackoverflow.com/questions/8931612/do-all-virtual-functions-need-to-be-implemented-in-derived-classes
+	 */
+	virtual bool executeAction(const despot::State& state,
+		const int action, const double time_from_start) const;
+
 	/* ========================================================================
 	 * Action
 	 * ========================================================================*/

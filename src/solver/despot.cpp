@@ -58,8 +58,23 @@ VNode* DESPOT::Trial(
 			break;
 		}
 
-    // If we are continuing building tree from the previous trial,
-    // then we will not expand here but only select the best action and obs.
+    // This if statement is only used between each time when we call Trial()
+    // in ConstructTree().
+    //
+    // Inside the do-while loop in Trial()
+    // (1) If the tree is empty (i.e. it is the first time we call Trial() from
+    // ConstructTree()) and cur==root of the tree,
+    // then cur must be a leaf. Then we will start expanding cur immediately.
+    //
+    // (2) If the tree is not empty and cur==root of the tree,
+    // then we will first keep exploiting deeper in the tree
+    // till finding the best action and observation via
+    // SelectBestUpperBoundNode() and SelectBestWEUNode().
+    // Then we will expand deeper from the leaf of the traced best path.
+    //
+    // (3) If the tree is not empty and cur==leaf of the tree,
+    // then we will start to expand deeper from the leaf immediately.
+    //
 		if (cur->IsLeaf())
     {
 			double start = clock();
@@ -319,7 +334,6 @@ VNode* DESPOT::ConstructTree(
 		statistics->time_search = used_time;
 		statistics->num_trials = num_trials;
 	}
-
 	return root;
 }
 
@@ -762,7 +776,7 @@ QNode* DESPOT::Prune(QNode* qnode, double& pruned_value) {
 
 ValuedAction DESPOT::OptimalAction(VNode* vnode)
 {
-  cout << "[DESPOT::OptimalAction]" << endl;
+  ROS_WARN_STREAM("[DESPOT::OptimalAction]");
 
 	ValuedAction astar(-1, Globals::NEG_INFTY);
 	for (int action = 0; action < vnode->children().size(); action++)
@@ -775,11 +789,15 @@ ValuedAction DESPOT::OptimalAction(VNode* vnode)
 	}
 
   // if default_move is better, we do default_move.
+  // Note that default_move was assigned in DESPOT::InitLowerBound(),
+  // which is the optimal action based on the lower bound policy.
 	if (vnode->default_move().value > astar.value)
   {
+    ROS_ERROR_STREAM("Default move=" << vnode->default_move()
+        << " is better than astar=" << astar);
+    exit(0);
 		astar = vnode->default_move();
 	}
-
 	return astar;
 }
 

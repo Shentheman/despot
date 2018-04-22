@@ -79,6 +79,12 @@ bool DSPOMDP::Step(State& state, double random_num, int action,
 	return Step(state, random_num, action, reward, obs);
 }
 
+// Real execution model for POMDP (Shen Li)
+bool DSPOMDP::executeAction(const despot::State& state,
+	const int action, const double time_from_start) const {
+}
+
+
 ParticleUpperBound* DSPOMDP::CreateParticleUpperBound(string name) const {
 	if (name == "TRIVIAL" || name == "DEFAULT") {
 		return new TrivialParticleUpperBound(this);

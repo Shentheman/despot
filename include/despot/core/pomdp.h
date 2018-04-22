@@ -130,7 +130,7 @@ public:
 	 * declare and implement the virtual function.
 	 * https://stackoverflow.com/questions/8931612/do-all-virtual-functions-need-to-be-implemented-in-derived-classes
 	 */
-	virtual bool executeAction(const despot::State& state,
+	virtual void executeAction(const despot::State& state,
 		const int action, const double time_from_start) const;
 
 	/* ========================================================================

@@ -80,7 +80,7 @@ bool DSPOMDP::Step(State& state, double random_num, int action,
 }
 
 // Real execution model for POMDP (Shen Li)
-bool DSPOMDP::executeAction(const despot::State& state,
+void DSPOMDP::executeAction(const despot::State& state,
 	const int action, const double time_from_start) const {
 }
 

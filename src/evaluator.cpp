@@ -199,8 +199,6 @@ bool Evaluator::RunStep(int step, int round)
 			*out_ << "- ObsProb = " << model_->ObsProb(obs, *state_, action)
 				<< endl;
 	}
-ROS_ERROR_STREAM("DONE in Evaluator::RunStep");
-exit(0);
 
 	ReportStepReward();
 	end_t = get_time_second();
@@ -229,6 +227,8 @@ exit(0);
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
+ROS_ERROR_STREAM("DONE in Evaluator::RunStep");
+exit(0);
 	step_++;
 	return false;
 }

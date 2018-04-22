@@ -285,7 +285,7 @@ VNode* DESPOT::ConstructTree(
 	double used_time = 0;
 	int num_trials = 0;
   // for debug (timeout was 1 originally)
-  timeout = 5;
+  timeout = 1;
 	do
   {
     ROS_ERROR_STREAM("TRIAL " << num_trials);
@@ -1356,7 +1356,7 @@ void DESPOT::belief(Belief* b) {
 
 void DESPOT::Update(int action, OBS_TYPE obs)
 {
-  cout << "[DESPOT::Update]" << endl;
+  ROS_WARN_STREAM("[DESPOT::Update action and obs]");
 
 	double start = get_time_second();
 

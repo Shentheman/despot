@@ -450,12 +450,18 @@ vector<State*> ParticleBelief::Sample(int num) const {
 
 void ParticleBelief::Update(int action, OBS_TYPE obs)
 {
+  ROS_WARN_STREAM("[ParticleBelief::Update]");
 	history_.Add(action, obs);
 
 	vector<State*> updated;
 	double total_weight = 0;
 	double reward;
 	OBS_TYPE o;
+
+  // for (State* s: particles_)
+  // {
+    // cout << *s << endl;
+  // }
 
 	// Update particles
 	for (int i = 0; i <particles_.size(); i++)
@@ -513,7 +519,7 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
   // TIGER:
   // total_weight=0.5
 
-  cout << "updated size=" << updated.size() << ", updated=\n" << endl;
+  cout << "updated.size()=" << updated.size() << endl;
   // TIGER:
   // updated size=4096, updated=
   // for (int i = 0; i < updated.size(); i ++)
@@ -528,16 +534,18 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
   // Resample if the particle set is empty
 	if (particles_.size() == 0)
   {
+    ROS_ERROR_STREAM("What is resample doing?");
+    exit(0);
 		logw << "Particle set is empty!" << endl;
 		if (prior_ != NULL)
     {
-			logw << "Resampling by drawing random particles from prior "
+			logw << "Method II. Resampling by drawing random particles from prior "
         << "which are consistent with history" << endl;
 			particles_ = Resample(num_particles_, *prior_, history_);
 		}
     else
     {
-			logw << "Resampling by searching initial particles "
+			logw << "Method I. Resampling by searching initial particles "
         << "which are consistent with history" << endl;
 			particles_ = Resample(
           num_particles_, initial_particles_, model_, history_);
@@ -545,7 +553,7 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
 
 		if (particles_.size() == 0 && state_indexer_ != NULL)
     {
-			logw << "Resampling by searching states consistent "
+			logw << "Method III. Resampling by searching states consistent "
         << "with last (action, observation) pair" << endl;
 			particles_ = Resample(
           num_particles_, model_, state_indexer_, action, obs);
@@ -579,7 +587,25 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
 		weight_square_sum += particle->weight * particle->weight;
 	}
 
-	// Resample if the effective number of particles is "small"
+	// Up-sample if the effective number of particles is "small"
+  //
+  // We use Kish's Effective Sample Size over the weights of all the particles
+  // to compute the effective number of particles.
+  // https://en.wikipedia.org/wiki/Effective_sample_size
+  //
+  // If we have very extreme weights across the particles, then the effective
+  // sample size becomes small.
+  //
+  // For example, if we have 3 particles with weights 0.9, 0.05, 0.05.
+  // Then num_effective_particles = 1.2 < num_particles_/2 = 3/2.
+  // In this case, we will sample num_particles_ particles from
+  // particles_ to construct a new belief.
+  //
+  // On the other hand, if we have 3 particles with 0.8, 0.1, 0.1.
+  // Then num_effective_particles = 1.515 > num_particles_/2 = 3/2.
+  // In this case, we will NOT sample num_particles_ particles from
+  // particles_ to construct a new belief.
+  //
 	double num_effective_particles = 1.0 / weight_square_sum;
 	if (num_effective_particles < num_particles_ / 2.0)
   {

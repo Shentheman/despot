@@ -17,7 +17,10 @@ ScenarioUpperBound::~ScenarioUpperBound() {
 }
 
 void ScenarioUpperBound::Init(const RandomStreams& streams) {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[ScenarioUpperBound::Init]");
+  }
 }
 
 string ScenarioUpperBound::text() const {

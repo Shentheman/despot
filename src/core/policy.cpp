@@ -22,7 +22,12 @@ Policy::~Policy() {
 
 ValuedAction Policy::Value(const vector<State*>& particles,
 	RandomStreams& streams, History& history) const {
+
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[Policy::Value]");
+  }
+
 	vector<State*> copy;
 	for (int i = 0; i < particles.size(); i++)
 		copy.push_back(model_->Copy(particles[i]));
@@ -38,8 +43,12 @@ ValuedAction Policy::Value(const vector<State*>& particles,
 
 ValuedAction Policy::RecursiveValue(const vector<State*>& particles,
 	RandomStreams& streams, History& history) const {
+
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[Policy::RecursiveValue]");
   // cout << "num of particles=" << particles.size() << endl;
+  }
 
 	if (streams.Exhausted()
 		|| (history.Size() - initial_depth_
@@ -55,13 +64,20 @@ ValuedAction Policy::RecursiveValue(const vector<State*>& particles,
 		double reward;
 		for (int i = 0; i < particles.size(); i++) {
 			State* particle = particles[i];
+
+      if (logging::level() >= logging::DEBUG)
+      {
       // cout << "Prev particles[" << i << "]=" << *particle << endl;
+      }
 
 			bool terminal = model_->Step(*particle,
 				streams.Entry(particle->scenario_id), action, reward, obs);
 
+      if (logging::level() >= logging::DEBUG)
+      {
       // cout << "New particles[" << i << "]=" << *particle << endl;
       // cout << "Reward =" << reward << ", Obs=" << obs << endl;
+      }
 
 			value += reward * particle->weight;
 

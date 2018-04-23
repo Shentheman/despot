@@ -175,7 +175,8 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
   if (options[E_VERBOSITY])
     verbosity = atoi(options[E_VERBOSITY].arg);
   // for debug
-  verbosity = 5;
+  // logging, DEBUG, debug
+  verbosity = 3;
   logging::level(verbosity);
 }
 
@@ -291,7 +292,10 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
       }
       simulator->solver(solver);
     }
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "before initround" << endl;
+    }
 
     // Initialize initial state, initial belief,
     // assign the initial belief to solver.

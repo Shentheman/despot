@@ -29,7 +29,11 @@ ostream& operator<<(ostream& os, const Belief& x) {
 
 vector<State*> Belief::Sample(int num, vector<State*> particles,
 	const DSPOMDP* model) {
+
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[Belief::Sample]");
+  }
 
   // The weight of each sample
 	double unit = 1.0 / num;
@@ -325,7 +329,11 @@ ParticleBelief::ParticleBelief(vector<State*> particles, const DSPOMDP* model,
 	split_(split),
 	state_indexer_(NULL) {
 
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[ParticleBelief::ParticleBelief]");
+  }
+
 	if (fabs(State::Weight(particles) - 1.0) > 1e-6) {
 		loge << "[ParticleBelief::ParticleBelief] Particle weights sum to " << State::Weight(particles) << " instead of 1" << endl;
 		exit(1);
@@ -394,34 +402,37 @@ ParticleBelief::ParticleBelief(vector<State*> particles, const DSPOMDP* model,
 	}
 
 
-  // for (int i = 0; i < particles_.size(); i ++)
-    // cout << "particles_[" << i << "] "<<*(particles_[i])<<endl;
-  //
-  // particles_[4092] (state_id = -1, weight = 0.000244141,
-  //   text = rover position = 1 rock_status = 0)
-  // particles_[4093] (state_id = -1, weight = 0.000244141,
-  //   text = rover position = 1 rock_status = 1)
-  // particles_[4094] (state_id = -1, weight = 0.000244141,
-  //   text = rover position = 1 rock_status = 0)
-  // particles_[4095] (state_id = -1, weight = 0.000244141,
-  //   text = rover position = 1 rock_status = 1)
+  if (logging::level() >= logging::DEBUG)
+  {
+    // for (int i = 0; i < particles_.size(); i ++)
+      // cout << "particles_[" << i << "] "<<*(particles_[i])<<endl;
+    //
+    // particles_[4092] (state_id = -1, weight = 0.000244141,
+    //   text = rover position = 1 rock_status = 0)
+    // particles_[4093] (state_id = -1, weight = 0.000244141,
+    //   text = rover position = 1 rock_status = 1)
+    // particles_[4094] (state_id = -1, weight = 0.000244141,
+    //   text = rover position = 1 rock_status = 0)
+    // particles_[4095] (state_id = -1, weight = 0.000244141,
+    //   text = rover position = 1 rock_status = 1)
 
-  // for (int i = 0; i < initial_particles_.size(); i ++)
-    // cout << "initial_particles_[" << i << "] "
-    // <<*(initial_particles_[i])<<endl;
-  //
-  // initial_particles_[0] (state_id = -1, weight = 0.5,
-  //   text = rover position = 1 rock_status = 1)
-  // initial_particles_[1] (state_id = -1, weight = 0.5,
-  //   text = rover position = 1 rock_status = 1)
+    // for (int i = 0; i < initial_particles_.size(); i ++)
+      // cout << "initial_particles_[" << i << "] "
+      // <<*(initial_particles_[i])<<endl;
+    //
+    // initial_particles_[0] (state_id = -1, weight = 0.5,
+    //   text = rover position = 1 rock_status = 1)
+    // initial_particles_[1] (state_id = -1, weight = 0.5,
+    //   text = rover position = 1 rock_status = 1)
 
-  // for (int i = 0; i < particles.size(); i ++)
-    // cout << "particles[" << i << "] "<<*(particles[i])<<endl;
-  //
-  // particles[0] (state_id = -1, weight = 0.5,
-  //   text = rover position = 1 rock_status = 1)
-  // particles[1] (state_id = -1, weight = 0.5,
-  //   text = rover position = 1 rock_status = 1)
+    // for (int i = 0; i < particles.size(); i ++)
+      // cout << "particles[" << i << "] "<<*(particles[i])<<endl;
+    //
+    // particles[0] (state_id = -1, weight = 0.5,
+    //   text = rover position = 1 rock_status = 1)
+    // particles[1] (state_id = -1, weight = 0.5,
+    //   text = rover position = 1 rock_status = 1)
+  }
 
 }
 
@@ -444,13 +455,20 @@ const vector<State*>& ParticleBelief::particles() const {
 }
 
 vector<State*> ParticleBelief::Sample(int num) const {
-  cout << "[ParticleBelief::Sample()]" << endl;
+  if (logging::level() >= logging::DEBUG)
+  {
+  ROS_WARN_STREAM("[ParticleBelief::Sample]");
+  }
 	return Belief::Sample(num, particles_, model_);
 }
 
 void ParticleBelief::Update(int action, OBS_TYPE obs)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[ParticleBelief::Update]");
+  }
+
 	history_.Add(action, obs);
 
 	vector<State*> updated;
@@ -458,25 +476,40 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
 	double reward;
 	OBS_TYPE o;
 
+  if (logging::level() >= logging::DEBUG)
+  {
   // for (State* s: particles_)
   // {
     // cout << *s << endl;
   // }
+  }
 
 	// Update particles
 	for (int i = 0; i <particles_.size(); i++)
   {
 		State* particle = particles_[i];
+
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "Before step, particle=" << *particle << endl;
+    }
+
     // Update state, reward, observation
 		bool terminal = model_->Step(
         *particle, Random::RANDOM.NextDouble(), action, reward, o);
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "After step, particle=" << *particle
         << ", action=" << action << ", reward=" << reward
         << ", observation=" << o << endl;
+    }
 
 		double prob = model_->ObsProb(obs, *particle, action);
+
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "The prob of observation = " << prob << endl;
+    }
 
     // Terminal state is not required to be explicitly represented
     // and may not have any observation.
@@ -486,12 +519,18 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
 			total_weight += particle->weight;
 			updated.push_back(particle);
 
+      if (logging::level() >= logging::DEBUG)
+      {
       cout << "After re-weight, particle=" << *particle << endl;
+      }
 		}
     else
     {
+      if (logging::level() >= logging::DEBUG)
+      {
       cout << "The particle is terminal or prob==0, so particle is freed."
         << endl;
+      }
 			model_->Free(particle);
 		}
 
@@ -515,6 +554,8 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
     // particle=(state_id = -1, !!!weight!!! = 0.00020752, text = LEFT)
 	}
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "total_weight=" << total_weight << endl;
   // TIGER:
   // total_weight=0.5
@@ -526,6 +567,7 @@ void ParticleBelief::Update(int action, OBS_TYPE obs)
   // {
     // cout << "updated[" << i << "]: " << *updated[i] << endl;
   // }
+  }
 
 	logd << "[ParticleBelief::Update] " << updated.size()
 		<< " particles survived among " << particles_.size() << endl;

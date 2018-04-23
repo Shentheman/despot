@@ -30,13 +30,19 @@ VNode* DESPOT::Trial(
     ScenarioLowerBound* lower_bound, ScenarioUpperBound* upper_bound,
     const DSPOMDP* model, History& history, SearchStatistics* statistics)
 {
-  ROS_WARN_STREAM("[DESPOT::Trial()]");
+  if (logging::level() >= logging::DEBUG)
+  {
+    ROS_WARN_STREAM("[DESPOT::Trial()]");
+  }
 
 	VNode* cur = root;
 
 	int hist_size = history.Size();
-  cout << "hist_size=" << hist_size << endl;
-  // TIGER: 0
+  if (logging::level() >= logging::DEBUG)
+  {
+    cout << "hist_size=" << hist_size << endl;
+    // TIGER: 0
+  }
 
 	do
   {
@@ -46,13 +52,19 @@ VNode* DESPOT::Trial(
 			statistics->longest_trial_length = cur->depth();
 		}
 
-    cout << "At depth=" << cur->depth() << endl;
-    // TIGER: 0
+    if (logging::level() >= logging::DEBUG)
+    {
+      cout << "At depth=" << cur->depth() << endl;
+      // TIGER: 0
+    }
 
 		ExploitBlockers(cur);
-	
-    cout << "[DESPOT::Trial] Gap(cur)=" << Gap(cur) << endl;
-    // TIGER: 220
+
+	  if (logging::level() >= logging::DEBUG)
+    {
+      cout << "[DESPOT::Trial] Gap(cur)=" << Gap(cur) << endl;
+      // TIGER: 220
+    }
 		if (Gap(cur) == 0)
     {
 			break;
@@ -89,44 +101,50 @@ VNode* DESPOT::Trial(
 			}
 		}
 
-    root->PrintTree();
-    cout << endl;
-    // TIGER:
-    // a - action
-    // o - observation
-    // d - default value
-    // l - lower bound
-    // u - upper bound
-    // r - totol weighted step_reward for 1 step
-    // w - total particle weight
-    // (d:-20 l:-20, u:200, w:1, weu:11)
-    // a=0: (d:-60.92, l:-60.92, u:148.08, r:-41.92)
-    // | o=2: (d:-19 l:-19, u:190, w:1, weu:-1.42109e-13)
-    // a=1: (d:-67.08, l:-67.08, u:141.92, r:-48.08)
-    // | o=2: (d:-19 l:-19, u:190, w:1, weu:-1.42109e-13)
-    // a=2: (d:-20, l:-20, u:189, r:-1)
-    // | o=0: (d:-9.462 l:-9.462, u:94.62, w:0.498, weu:-7.10543e-14)
-    // | o=1: (d:-9.538 l:-9.538, u:95.38, w:0.502, weu:-8.52651e-14)
-    //
-    // XXX:
-    // The upper bound of the vnode at a=2 = u1 = 189.
-    // The step_reward of the vnode at a=2 = r = -1.
-    // The upper bound of the qnode when a=2 and o=0 = u2 = 94.62.
-    // The upper bound of the qnode when a=2 and o=1 = u3 = 95.38.
-    // Then u1 = u2 + u3 + r.
-    // Note that we don't need to do u1 = 50%*u2 + 50%*u3 + r is because
-    // we have already weighted u2 and u3 inside InitBounds.
+	  if (logging::level() >= logging::DEBUG)
+    {
+      root->PrintTree();
+      cout << endl;
+      // TIGER:
+      // a - action
+      // o - observation
+      // d - default value
+      // l - lower bound
+      // u - upper bound
+      // r - totol weighted step_reward for 1 step
+      // w - total particle weight
+      // (d:-20 l:-20, u:200, w:1, weu:11)
+      // a=0: (d:-60.92, l:-60.92, u:148.08, r:-41.92)
+      // | o=2: (d:-19 l:-19, u:190, w:1, weu:-1.42109e-13)
+      // a=1: (d:-67.08, l:-67.08, u:141.92, r:-48.08)
+      // | o=2: (d:-19 l:-19, u:190, w:1, weu:-1.42109e-13)
+      // a=2: (d:-20, l:-20, u:189, r:-1)
+      // | o=0: (d:-9.462 l:-9.462, u:94.62, w:0.498, weu:-7.10543e-14)
+      // | o=1: (d:-9.538 l:-9.538, u:95.38, w:0.502, weu:-8.52651e-14)
+      //
+      // XXX:
+      // The upper bound of the vnode at a=2 = u1 = 189.
+      // The step_reward of the vnode at a=2 = r = -1.
+      // The upper bound of the qnode when a=2 and o=0 = u2 = 94.62.
+      // The upper bound of the qnode when a=2 and o=1 = u3 = 95.38.
+      // Then u1 = u2 + u3 + r.
+      // Note that we don't need to do u1 = 50%*u2 + 50%*u3 + r is because
+      // we have already weighted u2 and u3 inside InitBounds.
 
-    root->PrintPolicyTree();
-    // 0x130d4d0-a=2
-    // | o=0: 0x130d9a0-a=2
-    // | o=1: 0x130e720-a=2
+      root->PrintPolicyTree();
+      // 0x130d4d0-a=2
+      // | o=0: 0x130d9a0-a=2
+      // | o=1: 0x130e720-a=2
+    }
 
     // 1. Select the action which could produce the best upper_bound_ of QNode.
 		double start = clock();
 		QNode* qstar = SelectBestUpperBoundNode(cur);
-    ROS_ERROR_STREAM("The QNode with the best upper_bound_ = " << *qstar
-        << ", action=" << qstar->edge());
+	  if (logging::level() >= logging::DEBUG)
+    {
+      ROS_ERROR_STREAM("The QNode with the best upper_bound_ = " << *qstar
+          << ", action=" << qstar->edge());
+    }
     // TIGER:
     // #QNode: [lower_bound_=-20, upper_bound_=189, step_reward=-1,
     // utility_upper_bound=189]#
@@ -135,10 +153,13 @@ VNode* DESPOT::Trial(
 
     // 2. Then select the observation which could generate the max WEU.
 		VNode* next = SelectBestWEUNode(qstar);
-    ROS_ERROR_STREAM("The vnode with max WEU = " << *next
-        << ", observation=" << next->edge());
+	  if (logging::level() >= logging::DEBUG)
+    {
+      ROS_ERROR_STREAM("The vnode with max WEU = " << *next
+          << ", observation=" << next->edge());
     // TIGER:
     // @VNode: [depth_=1, lower_bound_=-9.462, upper_bound_=94.62]@
+    }
 
 		if (statistics != NULL) {
 			statistics->time_path += (clock() - start) / CLOCKS_PER_SEC;
@@ -151,6 +172,8 @@ VNode* DESPOT::Trial(
 		cur = next;
 		history.Add(qstar->edge(), cur->edge());
 
+	  if (logging::level() >= logging::DEBUG)
+    {
     cout << "After an iteration, the new cur=" << *cur
         << ", WEU=" << WEU(cur) << ", depth=" << cur->depth()
         << ", particles:" << endl;
@@ -165,6 +188,7 @@ VNode* DESPOT::Trial(
     if (WEU(cur) <= 0)
       ROS_ERROR_STREAM("[DESPOT::Trial()] Exit the loop because WEU(cur) <= 0"
           << "\n==========================================\n");
+    }
 
 	} while (cur->depth() < Globals::config.search_depth && WEU(cur) > 0);
 
@@ -175,12 +199,18 @@ VNode* DESPOT::Trial(
 }
 
 void DESPOT::ExploitBlockers(VNode* vnode) {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::ExploitBlockers]");
   cout << "Globals::config.pruning_constant="
     << Globals::config.pruning_constant << endl;
+  }
 
 	if (Globals::config.pruning_constant <= 0) {
+	  if (logging::level() >= logging::DEBUG)
+    {
     cout << "return" << endl;
+    }
 		return;
 	}
 
@@ -226,7 +256,10 @@ VNode* DESPOT::ConstructTree(
     const DSPOMDP* model, History& history, double timeout,
     SearchStatistics* statistics)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::ConstructTree()]");
+  }
 
 	if (statistics != NULL) {
 		statistics->num_particles_before_search = model->NumActiveParticles();
@@ -255,22 +288,33 @@ VNode* DESPOT::ConstructTree(
   // particles.size() = 500
 
 	VNode* root = new VNode(particles);
+  if (logging::level() >= logging::DEBUG)
+  {
   // TIGER:
   // root=@VNode: [depth_=0, lower_bound_=8.51073e-317,
   // upper_bound_=1.58101e-322]@
   cout << "root=" << *root << endl;
+  }
 
+  if (logging::level() >= logging::DEBUG)
+  {
   logd << "[DESPOT::ConstructTree] START - Initializing lower and "
     "upper bounds at the root node.";
+  }
 	InitBounds(root, lower_bound, upper_bound, streams, history);
 
+  if (logging::level() >= logging::DEBUG)
+  {
   logd << "[DESPOT::ConstructTree] END - Initializing lower and "
     "upper bounds at the root node.";
+  }
 
 	if (statistics != NULL) {
 		statistics->initial_lb = root->lower_bound();
 		statistics->initial_ub = root->upper_bound();
 	}
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "[DESPOT::ConstructTree] After initializing bonuds, statistics=\n"
     << *statistics << endl;
   // After initializing bonuds, statistics=
@@ -280,6 +324,7 @@ VNode* DESPOT::ConstructTree(
   // Trials: no. / max length = 0 / 0
   // # nodes: expanded / total / policy = 0 / 0 / 0
   // # particles: initial / final / tree = 4598 / 0 / 0
+  }
 
 
 	double used_time = 0;
@@ -288,7 +333,10 @@ VNode* DESPOT::ConstructTree(
   timeout = 1;
 	do
   {
+    if (logging::level() >= logging::DEBUG)
+    {
     ROS_ERROR_STREAM("TRIAL " << num_trials);
+    }
 		double start = clock();
 		VNode* cur = Trial(root, streams, lower_bound, upper_bound,
         model, history, statistics);
@@ -312,6 +360,8 @@ VNode* DESPOT::ConstructTree(
 
 		num_trials++;
 
+    if (logging::level() >= logging::DEBUG)
+    {
     if (used_time * (num_trials + 1.0) / num_trials >= timeout)
       ROS_ERROR_STREAM("[DESPOT::ConstructTree()] Exit the loop because "
           << "time is up (timeout=" << timeout << ")"
@@ -320,6 +370,7 @@ VNode* DESPOT::ConstructTree(
       ROS_ERROR_STREAM("[DESPOT::ConstructTree()] Exit the loop because "
           << "root->upper_bound() - root->lower_bound() <= 1e-6"
           << "\n==========================================\n");
+    }
 	}
   while (used_time * (num_trials + 1.0) / num_trials < timeout
       && (root->upper_bound() - root->lower_bound()) > 1e-6);
@@ -356,43 +407,58 @@ void DESPOT::InitLowerBound(
     VNode* vnode, ScenarioLowerBound* lower_bound,
     RandomStreams& streams, History& history)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::InitLowerBound]");
+  }
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "Old vnode=" << *vnode << endl;
   // TIGER:
   // lower_bound is TrivialParticleLowerBound.
   // Old vnode=@VNode:
   // [depth_=0, lower_bound_=1.05142e-316, upper_bound_=1.58101e-322]@
+  }
 
 	streams.position(vnode->depth());
 	
   // For TrivialParticleLowerBound,
   // return the max min_reward action across all actions with its value
 	ValuedAction move = lower_bound->Value(vnode->particles(), streams, history);
+
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "At depth=" << vnode->depth() << ", lower_bound (action, value) ="
     << move << endl;
-
   // TIGER:
   // The max min_reward action is LISTEN. Its min_reward = -1.
   // So here -1 / 1-(discount=0.95) = -20
   // At depth=0, lower_bound (action, value) =(2, -20)
+  }
 
   // We assume the vnode->particles() has depth 0 in lower_bound->Value(),
   // so now we need to multiple the discount again.
   // Here if the vnode is the root, then vnode->depth() == 0 here.
 	move.value *= Globals::Discount(vnode->depth());
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "After discounted, (action, value)=" << move << endl;
   // TIGER:
   // After discounted, (action, value)=(2, -20)
+  }
 
 	vnode->default_move(move);
 	vnode->lower_bound(move.value);
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "New vnode=" << *vnode << endl;
   // TIGER:
   // New vnode=@VNode:
   // [depth_=0, lower_bound_=-20, upper_bound_=1.58101e-322]@
+  }
 }
 
 
@@ -400,13 +466,19 @@ void DESPOT::InitUpperBound(
     VNode* vnode, ScenarioUpperBound* upper_bound,
     RandomStreams& streams, History& history)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::InitUpperBound]");
+  }
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "Old vnode=" << *vnode << endl;
   // TIGER:
   // lower_bound is TrivialParticleLowerBound.
   // Old vnode=@VNode:
   // [depth_=0, lower_bound_=-20, upper_bound_=1.58101e-322]@
+  }
 
 	streams.position(vnode->depth());
 
@@ -414,33 +486,45 @@ void DESPOT::InitUpperBound(
   // return the max_reward action across all actions with its value
 	double upper = upper_bound->Value(vnode->particles(), streams, history);
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "At depth=" << vnode->depth() << ", upper_bound value ="
     << upper << endl;
   // TIGER:
   // The max_reward action is LEFT and RIGHT. Its max_reward = 10;
   // So here 10 / 1-(discount=0.95) = 200
   // At depth=0, upper_bound value =200
+  }
 
   // We assume the vnode->particles() has depth 0 in upper_bound->Value(),
   // so now we need to multiple the discount again.
 	vnode->utility_upper_bound = upper * Globals::Discount(vnode->depth());
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "After discounted, value=" << vnode->utility_upper_bound << endl;
   // TIGER:
   // After discounted, value=200
+  }
 
 	upper = upper * Globals::Discount(vnode->depth())\
           - Globals::config.pruning_constant;
 	vnode->upper_bound(upper);
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "New vnode=" << *vnode << endl;
   // TIGER:
   // New vnode=@VNode: [depth_=0, lower_bound_=-20, upper_bound_=200]@
+  }
 }
 
 void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 	ScenarioUpperBound* upper_bound, RandomStreams& streams, History& history) {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::InitBounds]");
+  }
 
   InitLowerBound(vnode, lower_bound, streams, history);
 	InitUpperBound(vnode, upper_bound, streams, history);
@@ -450,12 +534,18 @@ void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 		|| vnode->depth() == Globals::config.search_depth - 1) {
 		vnode->upper_bound(vnode->lower_bound());
 	}
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_ERROR_STREAM("[DESPOT::InitBounds]: New vnode=" << *vnode);
+  }
 }
 
 ValuedAction DESPOT::Search()
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::Search]");
+  }
 
   // TIGER:
   // Sorted pdf for 4096 particles:
@@ -463,9 +553,14 @@ ValuedAction DESPOT::Search()
   //   RIGHT = 0.5
   // cout << *belief_ << endl;
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "PrintBelief:" << endl;
+  }
 	if (logging::level() >= logging::DEBUG)
+  {
     model_->PrintBelief(*belief_);
+  }
 
   // Return a random action if no time is allocated for planning
 	if (Globals::config.time_per_move <= 0)
@@ -482,6 +577,9 @@ ValuedAction DESPOT::Search()
 Globals::config.num_scenarios = 1;
 
 	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
+
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "We sample " << Globals::config.num_scenarios << " scenarios." << endl;
 
   // for (int i = 0; i < particles.size(); i ++)
@@ -500,6 +598,7 @@ Globals::config.num_scenarios = 1;
   // [8]: (state_id = -1, weight = 0.002, text = LEFT)
   logi << "[DESPOT::Search] Time for sampling " << particles.size()
 		<< " particles: " << (get_time_second() - start) << "s" << endl;
+  }
 
   // XXX: In the beginning inside [SimpleRockSample::InitialBelief()],
   // we Allocate() 2 particles,
@@ -515,7 +614,10 @@ Globals::config.num_scenarios = 1;
   // exit(0);
 
 	statistics_ = SearchStatistics();
-  // cout << statistics_ << endl;
+
+  if (logging::level() >= logging::DEBUG)
+  {
+  cout << statistics_ << endl;
   // TIGER:
   // Initial bounds: (-inf, inf)
   // Final bounds: (-inf, inf)
@@ -523,10 +625,14 @@ Globals::config.num_scenarios = 1;
   // Trials: no. / max length = 0 / 0
   // # nodes: expanded / total / policy = 0 / 0 / 0
   // # particles: initial / final / tree = 0 / 0 / 0
+  }
 
 	start = get_time_second();
 	static RandomStreams streams = RandomStreams(Globals::config.num_scenarios,
       Globals::config.search_depth);
+
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "Create num_scenarios=" << Globals::config.num_scenarios
       << " RandomStreams and each has length search_depth="
       << Globals::config.search_depth<< endl;
@@ -539,6 +645,7 @@ Globals::config.num_scenarios = 1;
   // Stream 1: 0.357293 0.184858 0.107582 0.610372 0.336558 ... 0.871826 
   // ...
   // Stream 499: 0.357293 0.184858 0.107582 0.610372 0.336558 ... 0.871826 
+  }
 
   // TIGER:
   // upper_bound_ = TrivialParticleUpperBound
@@ -554,14 +661,21 @@ Globals::config.num_scenarios = 1;
 			upper_bound_->Init(streams);
 			initialized = true;
 		}
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "ub != NULL" << endl;
-	} else {
+    }
+	}
+  else {
 		streams = RandomStreams(Globals::config.num_scenarios,
 			Globals::config.search_depth);
     // This is ScenarioUpperBound::Init(), which does nothing.
 		lower_bound_->Init(streams);
 		upper_bound_->Init(streams);
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "ub == NULL" << endl;
+    }
 	}
 
   // TIGER:
@@ -569,22 +683,33 @@ Globals::config.num_scenarios = 1;
   // default TrivialParticleUpperBound, empty history_, default statistics_.
 	root_ = ConstructTree(particles, streams, lower_bound_, upper_bound_,
       model_, history_, Globals::config.time_per_move, &statistics_);
+
+  if (logging::level() >= logging::DEBUG)
+  {
 	logi << "[DESPOT::Search] Time for tree construction: "
 		<< (get_time_second() - start) << "s" << endl;
+  }
 
 	start = get_time_second();
 	root_->Free(*model_);
+
+  if (logging::level() >= logging::DEBUG)
+  {
 	logi << "[DESPOT::Search] Time for freeing particles in search tree: "
 		<< (get_time_second() - start) << "s" << endl;
+  }
 
 	ValuedAction astar = OptimalAction(root_);
 	start = get_time_second();
 	delete root_;
 
+  if (logging::level() >= logging::DEBUG)
+  {
 	logi << "[DESPOT::Search] Time for deleting tree: "
 		<< (get_time_second() - start) << "s" << endl;
 	logi << "[DESPOT::Search] Search statistics:" << endl << statistics_
 		<< endl;
+  }
 
 	return astar;
 }
@@ -776,7 +901,10 @@ QNode* DESPOT::Prune(QNode* qnode, double& pruned_value) {
 
 ValuedAction DESPOT::OptimalAction(VNode* vnode)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::OptimalAction]");
+  }
 
 	ValuedAction astar(-1, Globals::NEG_INFTY);
 	for (int action = 0; action < vnode->children().size(); action++)
@@ -850,7 +978,10 @@ QNode* DESPOT::SelectBestUpperBoundNode(VNode* vnode)
 	for (int action = 0; action < vnode->children().size(); action++)
   {
 		QNode* qnode = vnode->Child(action);
-    // cout << qnode->upper_bound() << endl;
+    if (logging::level() >= logging::DEBUG)
+    {
+    cout << qnode->upper_bound() << endl;
+    }
 
 		if (qnode->upper_bound() > upperstar) {
 			upperstar = qnode->upper_bound();
@@ -863,8 +994,11 @@ QNode* DESPOT::SelectBestUpperBoundNode(VNode* vnode)
 
 void DESPOT::Update(VNode* vnode)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::Update for VNode]");
   cout << "Before update the bounds, vnode=" << *vnode << endl;
+  }
 
 	if (vnode->IsLeaf())
   {
@@ -911,6 +1045,8 @@ void DESPOT::Update(VNode* vnode)
 		vnode->utility_upper_bound = utility_upper;
 	}
 
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "After update the bounds, vnode=" << *vnode << endl;
   // TIGER:
   // Before update the bounds, vnode=@VNode:
@@ -923,7 +1059,8 @@ void DESPOT::Update(VNode* vnode)
   // step_reward=-1, utility_upper_bound=189]#
   // After update the bounds, vnode=@VNode:
   // [depth_=0, lower_bound_=-20, upper_bound_=189]@
-  //
+  }
+
   // XXX: The intuition here is that the bounds of root VNode are estimated
   // roughly and naively at first by only using the default bounds.
   // When we expand root VNode v1 to get a list of QNodes q2,
@@ -938,8 +1075,11 @@ void DESPOT::Update(VNode* vnode)
 
 void DESPOT::Update(QNode* qnode)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "[DESPOT::Update for QNode]" << endl;
   cout << "Before update the bounds, qnode=" << *qnode << endl;
+  }
 
 	double lower = qnode->step_reward;
 	double upper = qnode->step_reward;
@@ -956,7 +1096,10 @@ void DESPOT::Update(QNode* qnode)
 		upper += vnode->upper_bound();
 		utility_upper += vnode->utility_upper_bound;
 
-    // cout << *vnode << endl;
+    if (logging::level() >= logging::DEBUG)
+    {
+    cout << *vnode << endl;
+    }
 	}
 
 	if (lower > qnode->lower_bound()) {
@@ -968,6 +1111,8 @@ void DESPOT::Update(QNode* qnode)
 	if (utility_upper < qnode->utility_upper_bound) {
 		qnode->utility_upper_bound = utility_upper;
 	}
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "After update the bounds, qnode=" << *qnode << endl;
 
   // TIGER:
@@ -979,7 +1124,8 @@ void DESPOT::Update(QNode* qnode)
   // After update the bounds, qnode=#QNode:
   // [lower_bound_=-20, upper_bound_=189, step_reward=-1,
   // utility_upper_bound=189]#
-  //
+  }
+
   // XXX: The intuition here is that if we ever update the bounds of
   // the children of qnode, then it is necessary to re-compute the bounds
   // of the qnode.
@@ -989,17 +1135,26 @@ void DESPOT::Update(QNode* qnode)
 
 void DESPOT::Backup(VNode* vnode)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   cout << "[DESPOT::Backup]" << endl;
+  }
 
+  if (logging::level() >= logging::DEBUG)
+  {
 	logd << "- Backup " << *vnode << " at depth " << vnode->depth() << endl;
   // TIGER:
   // Backup @VNode: [depth_=1, lower_bound_=-9.462,
   // upper_bound_=94.62]@ at depth 1
+  }
 
 	int iter = 0;
 	while (true)
   {
+    if (logging::level() >= logging::DEBUG)
+    {
 		logd << " Iter " << iter << " " << vnode << endl;
+    }
 
 		Update(vnode);
 
@@ -1010,13 +1165,19 @@ void DESPOT::Backup(VNode* vnode)
 
 		Update(parentq);
 
+    if (logging::level() >= logging::DEBUG)
+    {
 		logd << " Updated Q-node to (" << parentq->lower_bound() << ", "
 			<< parentq->upper_bound() << ")" << endl;
+    }
 
 		vnode = parentq->parent();
 		iter++;
 	}
+  if (logging::level() >= logging::DEBUG)
+  {
 	logd << "* Backup complete!" << endl;
+  }
 }
 
 VNode* DESPOT::FindBlocker(VNode* vnode) {
@@ -1043,7 +1204,10 @@ void DESPOT::Expand(
     const DSPOMDP* model, RandomStreams& streams,
     History& history)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::Expand(VNode)]");
+  }
 
   // Now children is empty.
   // Note that the children here is a reference to the
@@ -1051,15 +1215,21 @@ void DESPOT::Expand(
   // So we will update the children inside VNode here.
 	vector<QNode*>& children = vnode->children();
 
+  if (logging::level() >= logging::DEBUG)
+  {
   logd << "- Expanding vnode " << *vnode << endl;
   // Tiger:
   // Expanding vnode @VNode: [depth_=0, lower_bound_=-20, upper_bound_=200]@
+  }
 
   // Here we will expand all the possible actions:
 	for (int action = 0; action < model->NumActions(); action++)
   {
+    if (logging::level() >= logging::DEBUG)
+    {
     // logd << " actions[" << action << "]:" << endl;
     ROS_ERROR_STREAM("actions[" << action << "]:");
+    }
 
     // The qnode's parent is vnode, and the edge between the qnode and vnode
     // is the action.
@@ -1069,7 +1239,10 @@ void DESPOT::Expand(
     // This is DESPOT::Expand(QNode* qnode, ... ) for a QNode.
 		Expand(qnode, lower_bound, upper_bound, model, streams, history);
 	}
+  if (logging::level() >= logging::DEBUG)
+  {
 	logd << "* Expansion complete!" << endl;
+  }
 }
 
 void DESPOT::Expand(
@@ -1078,12 +1251,15 @@ void DESPOT::Expand(
     RandomStreams& streams,
     History& history)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::Expand(QNode)]");
   cout << "Before creating new vnodes as children, qnode=" << *qnode << endl;
   // TIGER:
   // Before creating new vnodes as children, qnode=#QNode:
   // [lower_bound_=1.53832e+256, upper_bound_=4.71221e+257,
   // step_reward=6.96794e+98, utility_upper_bound=9.10979e+227]#
+  }
 
 	VNode* parent = qnode->parent();
 
@@ -1116,13 +1292,18 @@ void DESPOT::Expand(
   {
 		State* particle = particles[i];
 
-		// logd << " Original: " << *particle << endl;
-		// cout << " Original particles[" << i << "] = " << *particle << endl;
-    // TIGER:
-    // Original particles[0] = (state_id = -1, weight = 0.002, text = LEFT)
+    if (logging::level() >= logging::DEBUG)
+    {
+      // logd << " Original: " << *particle << endl;
+      // cout << " Original particles[" << i << "] = " << *particle << endl;
+      // TIGER:
+      // Original particles[0] = (state_id = -1, weight = 0.002, text = LEFT)
+    }
 
 		State* copy = model->Copy(particle);
 
+    if (logging::level() >= logging::DEBUG)
+    {
 		// logd << " Before step: " << *copy << endl;
 		// cout << "Before step, copy=" << *copy << endl
       // << "copy->scenario_id=" << copy->scenario_id
@@ -1134,17 +1315,21 @@ void DESPOT::Expand(
     // Before step, copy=(state_id = -1, weight = 0.002, text = LEFT)
     // copy->scenario_id=0, parent->depth()=0,
     // streams_[scenario_id][depth]=0.170837, action=0
+    }
 
 		bool terminal = model->Step(
         *copy, streams.Entry(copy->scenario_id),
         qnode->edge(), reward, obs);
 
+    if (logging::level() >= logging::DEBUG)
+    {
     // cout << "After step, copy=" << *copy << endl
       // << "reward=" << reward << ", observation=" << obs
       // << ", weighted reward=" << reward * copy->weight << endl;
     // TIGER:
     // After step, copy=(state_id = -1, weight = 0.002, text = RIGHT)
     // reward=-100, observation=2, weighted reward=-0.2
+    }
 
 		step_reward += reward * copy->weight;
 
@@ -1173,6 +1358,8 @@ void DESPOT::Expand(
     //pruning_constant is used for regularization
     - Globals::config.pruning_constant;
 
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_ERROR_STREAM("At depth=" << parent->depth()
     << ", Globals::Discount(depth)=" << Globals::Discount(parent->depth())
     << ", Globals::config.pruning_constant="
@@ -1180,6 +1367,7 @@ void DESPOT::Expand(
     << ", step_reward from all particles=" << step_reward);
   // At depth=0, Globals::Discount(depth)=1,
   // Globals::config.pruning_constant=0, step_reward=-43.24
+  }
 	
   // XXX: Here we add step_reward to lower_bound:
   // Q_value = Reward + gamma * Value
@@ -1204,10 +1392,17 @@ void DESPOT::Expand(
 		// logd << " New node created!" << endl;
 		children[obs] = vnode;
 
+    if (logging::level() >= logging::DEBUG)
+    {
     cout << "partitions[" << counter << "]: obs=" << obs
       << ", action=" << qnode->edge() << ", "
       << it->second.size() << " particles=" << *vnode << endl;
+    }
+
     counter ++;
+
+    if (logging::level() >= logging::DEBUG)
+    {
     // for (State* s: it->second)
     // {
       // cout << *s << endl;
@@ -1216,6 +1411,7 @@ void DESPOT::Expand(
     // partitions[0]: obs=2, action=0, 500 particles=
     // Since the action0=LEFT, we always get the observation=2.
     // So there is only 1 element in partitions.
+    }
 
     // We just create a new vnode for the action and observation
     // as a child of the qnode. Now we will compute the bounods of the vnode.
@@ -1275,6 +1471,8 @@ void DESPOT::Expand(
 
 	qnode->default_value = lower_bound; // for debugging
 
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_ERROR_STREAM("After creating new vnodes as children, qnode=" << *qnode);
   // TIGER:
   // After creating new vnodes as children, qnode=#QNode:
@@ -1282,6 +1480,7 @@ void DESPOT::Expand(
   // utility_upper_bound=146.76]#
   // qnode.lower_bound_ = -19 + -43.24
   // qnode.upper_bound_ = -190 + -43.24
+  }
 }
 
 
@@ -1345,18 +1544,28 @@ ValuedAction DESPOT::Evaluate(VNode* root, vector<State*>& particles,
 }
 
 void DESPOT::belief(Belief* b) {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::belief]");
 	logi << "[DESPOT::belief] Start: Set initial belief." << endl;
+  }
+
 	belief_ = b;
 	history_.Truncate(0);
 
 	lower_bound_->belief(b); // needed for POMCPScenarioLowerBound
+  if (logging::level() >= logging::DEBUG)
+  {
 	logi << "[DESPOT::belief] End: Set initial belief." << endl;
+  }
 }
 
 void DESPOT::Update(int action, OBS_TYPE obs)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[DESPOT::Update action and obs]");
+  }
 
 	double start = get_time_second();
 
@@ -1366,9 +1575,12 @@ void DESPOT::Update(int action, OBS_TYPE obs)
 
 	lower_bound_->belief(belief_);
 
+  if (logging::level() >= logging::DEBUG)
+  {
 	logi << "[Solver::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
+  }
 }
 
 } // namespace despot

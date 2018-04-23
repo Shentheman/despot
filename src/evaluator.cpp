@@ -139,7 +139,10 @@ Evaluator::~Evaluator() {
 
 bool Evaluator::RunStep(int step, int round)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[Evaluator::RunStep]");
+  }
 
 	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_)
   {
@@ -346,7 +349,7 @@ int IPPCEvaluator::Handshake(string instance) {
 }
 
 void IPPCEvaluator::InitRound() {
-  std::cout<<"[IPPCEvaluator::InitRound()]"<<std::endl;
+  cout<<"[IPPCEvaluator::InitRound()]"<<endl;
 	step_ = 0;
 	state_ = NULL;
 
@@ -542,7 +545,10 @@ int POMDPEvaluator::Handshake(string instance) {
 
 void POMDPEvaluator::InitRound()
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[POMDPEvaluator::InitRound()]");
+  }
 
 	step_ = 0;
 	double start_t, end_t;
@@ -606,7 +612,10 @@ double POMDPEvaluator::EndRound() {
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs)
 {
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_WARN_STREAM("[POMDPEvaluator::ExecuteAction]");
+  }
 
   // We have to call executeAction before Step because executeAction
   // needs to use the current robot state.
@@ -619,9 +628,12 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs)
 	reward_ = reward;
 	total_discounted_reward_ += Globals::Discount(step_) * reward;
 	total_undiscounted_reward_ += reward;
+  if (logging::level() >= logging::DEBUG)
+  {
   ROS_INFO_STREAM("total_discounted_reward_+="
       << Globals::Discount(step_) * reward
       << "\ntotal_undiscounted_reward_+=" << reward);
+  }
 
 	return terminal;
 }

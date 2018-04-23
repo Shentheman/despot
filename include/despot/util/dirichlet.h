@@ -6,15 +6,17 @@
 
 namespace despot {
 
-class Dirichlet {
+class Dirichlet
+{
 private:
   std::vector<double> alpha_;
-public:
-	Dirichlet(std::vector<double> alpha);
 
-	std::vector<double> alpha();
-	std::vector<double> Next();
-	static std::vector<double> Next(std::vector<double> alpha);
+public:
+  Dirichlet(std::vector<double> alpha);
+
+  std::vector<double> alpha();
+  std::vector<double> Next();
+  static std::vector<double> Next(std::vector<double> alpha);
 };
 
 } // namespace despot

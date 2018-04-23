@@ -1,46 +1,48 @@
 #ifndef DESPOT_H
 #define DESPOT_H
 
-#include <despot/core/solver.h>
-#include <despot/core/pomdp.h>
 #include <despot/core/belief.h>
-#include <despot/core/node.h>
 #include <despot/core/globals.h>
 #include <despot/core/history.h>
+#include <despot/core/node.h>
+#include <despot/core/pomdp.h>
+#include <despot/core/solver.h>
 #include <despot/random_streams.h>
 
 namespace despot {
 
-class DESPOT: public Solver {
-friend class VNode;
+class DESPOT : public Solver
+{
+  friend class VNode;
 
 protected:
-	VNode* root_;
-	SearchStatistics statistics_;
+  VNode* root_;
+  SearchStatistics statistics_;
 
-	ScenarioLowerBound* lower_bound_;
-	ScenarioUpperBound* upper_bound_;
+  ScenarioLowerBound* lower_bound_;
+  ScenarioUpperBound* upper_bound_;
 
 public:
-	DESPOT(
+  DESPOT(
       const DSPOMDP* model,
-      ScenarioLowerBound* lb, ScenarioUpperBound* ub,
+      ScenarioLowerBound* lb,
+      ScenarioUpperBound* ub,
       Belief* belief = NULL);
-	virtual ~DESPOT();
+  virtual ~DESPOT();
 
   /*
    * Find the best action for now
    */
-	ValuedAction Search();
+  ValuedAction Search();
 
-	void belief(Belief* b);
+  void belief(Belief* b);
   /*
    * Update the history, the belief, and the belief inside the lower_bound_.
    */
-	void Update(int action, OBS_TYPE obs);
+  void Update(int action, OBS_TYPE obs);
 
-	ScenarioLowerBound* lower_bound() const;
-	ScenarioUpperBound* upper_bound() const;
+  ScenarioLowerBound* lower_bound() const;
+  ScenarioUpperBound* upper_bound() const;
 
   /*
    * Construct a tree with sampled particles or scenarios.
@@ -49,10 +51,14 @@ public:
    * to a QNode. Then at each QNode, we use streams to sample an
    * observation so that the QNode then transits to another VNode.
    */
-	static VNode* ConstructTree(
-      std::vector<State*>& particles, RandomStreams& streams,
-      ScenarioLowerBound* lower_bound, ScenarioUpperBound* upper_bound,
-      const DSPOMDP* model, History& history, double timeout,
+  static VNode* ConstructTree(
+      std::vector<State*>& particles,
+      RandomStreams& streams,
+      ScenarioLowerBound* lower_bound,
+      ScenarioUpperBound* upper_bound,
+      const DSPOMDP* model,
+      History& history,
+      double timeout,
       SearchStatistics* statistics = NULL);
 
 protected:
@@ -75,9 +81,13 @@ protected:
    *
    * TODO: What is ExploitBlockers(cur); doing?
    */
-	static VNode* Trial(VNode* root, RandomStreams& streams,
-      ScenarioLowerBound* lower_bound, ScenarioUpperBound* upper_bound,
-      const DSPOMDP* model, History& history,
+  static VNode* Trial(
+      VNode* root,
+      RandomStreams& streams,
+      ScenarioLowerBound* lower_bound,
+      ScenarioUpperBound* upper_bound,
+      const DSPOMDP* model,
+      History& history,
       SearchStatistics* statistics = NULL);
 
   /*
@@ -89,39 +99,51 @@ protected:
    * not the specific value.
    * The specific values of bounds are stored in each VNode.
    */
-	static void InitLowerBound(VNode* vnode, ScenarioLowerBound* lower_bound,
-      RandomStreams& streams, History& history);
-	static void InitUpperBound(VNode* vnode, ScenarioUpperBound* upper_bound,
-      RandomStreams& streams, History& history);
+  static void InitLowerBound(
+      VNode* vnode,
+      ScenarioLowerBound* lower_bound,
+      RandomStreams& streams,
+      History& history);
+  static void InitUpperBound(
+      VNode* vnode,
+      ScenarioUpperBound* upper_bound,
+      RandomStreams& streams,
+      History& history);
   /*
    * Compute the lower and upper bounds, close the gap to 0 if upper < lower.
    */
-	static void InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
-		ScenarioUpperBound* upper_bound, RandomStreams& streams, History& history);
+  static void InitBounds(
+      VNode* vnode,
+      ScenarioLowerBound* lower_bound,
+      ScenarioUpperBound* upper_bound,
+      RandomStreams& streams,
+      History& history);
 
   /*
    * Expand the vnode v into a list of QNode q's.
    * For each possible action a, we will expand v --a--> q.
    */
-	static void Expand(
+  static void Expand(
       VNode* vnode,
-      ScenarioLowerBound* lower_bound, ScenarioUpperBound* upper_bound,
-      const DSPOMDP* model, RandomStreams& streams, History& history);
-
+      ScenarioLowerBound* lower_bound,
+      ScenarioUpperBound* upper_bound,
+      const DSPOMDP* model,
+      RandomStreams& streams,
+      History& history);
 
   /*
    * Update VNode v1's lower and upper bounds based on the highest lower
    * bound and highest upper bound of its children QNodes.
    * v1 has multiple children because we can execute multiple actions at v1.
    */
-	static void Update(VNode* vnode);
+  static void Update(VNode* vnode);
   /*
    * Update QNode q1's lower and upper bounds via the weighted average
    * of all of its children VNodes.
    * q1 has multiple children because q1's parent v1 has multiple particles
    * which will cause different observations at q1.
    */
-	static void Update(QNode* qnode);
+  static void Update(QNode* qnode);
   /*
    * For each leaf VNode v1 of the tree, update its lower and upper bounds
    * based on the highest lower bound and highest upper bound of its children
@@ -135,20 +157,20 @@ protected:
    *
    * Then update the parent of q1 ... (from leaf to root).
    */
-	static void Backup(VNode* vnode);
+  static void Backup(VNode* vnode);
 
-	/*
+  /*
    * Compute the difference between vnode->upper_bound()
    * and vnode->lower_bound().
    */
-	static double Gap(VNode* vnode);
+  static double Gap(VNode* vnode);
 
-	double CheckDESPOT(const VNode* vnode, double regularized_value);
-	double CheckDESPOTSTAR(const VNode* vnode, double regularized_value);
-	void Compare();
+  double CheckDESPOT(const VNode* vnode, double regularized_value);
+  double CheckDESPOTSTAR(const VNode* vnode, double regularized_value);
+  void Compare();
 
-	static void ExploitBlockers(VNode* vnode);
-	static VNode* FindBlocker(VNode* vnode);
+  static void ExploitBlockers(VNode* vnode);
+  static VNode* FindBlocker(VNode* vnode);
 
   /*
    * Expand the qnode q into a list of VNode v1's.
@@ -169,13 +191,16 @@ protected:
    * In the end, we will update the lower bound and upper bound of q
    * as bound_q = average_reward_of_executing_a + \sum(discounted_bound_v3)
    */
-	static void Expand(
-      QNode* qnode, ScenarioLowerBound* lower_bound,
-      ScenarioUpperBound* upper_bound, const DSPOMDP* model,
-      RandomStreams& streams, History& history);
+  static void Expand(
+      QNode* qnode,
+      ScenarioLowerBound* lower_bound,
+      ScenarioUpperBound* upper_bound,
+      const DSPOMDP* model,
+      RandomStreams& streams,
+      History& history);
 
-	static VNode* Prune(VNode* vnode, int& pruned_action, double& pruned_value);
-	static QNode* Prune(QNode* qnode, double& pruned_value);
+  static VNode* Prune(VNode* vnode, int& pruned_action, double& pruned_value);
+  static QNode* Prune(QNode* qnode, double& pruned_value);
 
   /*
    * WEU - Weighted Excess Utility - equation (11) in the jair17 paper.
@@ -187,29 +212,33 @@ protected:
    * can cover "the number of these particles" amounts of xi*Gap(root),
    * we are good and break the do-while loop of DESPOT::Trial.
    */
-	static double WEU(VNode* vnode);
-	static double WEU(VNode* vnode, double epsilon);
+  static double WEU(VNode* vnode);
+  static double WEU(VNode* vnode, double epsilon);
   /*
    * Return the vnode which has the highest WEU among all the children VNodes
    * of qnode.
    */
-	static VNode* SelectBestWEUNode(QNode* qnode);
+  static VNode* SelectBestWEUNode(QNode* qnode);
   /*
-   * Return the qnode with the highest upper_bound among 
+   * Return the qnode with the highest upper_bound among
    * all the children qnodes of vnode.
    * The number of children that vnode has should be equivalent
    * to the number of possible actions.
    */
-	static QNode* SelectBestUpperBoundNode(VNode* vnode);
+  static QNode* SelectBestUpperBoundNode(VNode* vnode);
 
   /*
    * Find the action (vnode->qnode) that can achieve the highest lower_bound
    * of qnode.
    */
-	static ValuedAction OptimalAction(VNode* vnode);
+  static ValuedAction OptimalAction(VNode* vnode);
 
-	static ValuedAction Evaluate(VNode* root, std::vector<State*>& particles,
-		RandomStreams& streams, POMCPPrior* prior, const DSPOMDP* model);
+  static ValuedAction Evaluate(
+      VNode* root,
+      std::vector<State*>& particles,
+      RandomStreams& streams,
+      POMCPPrior* prior,
+      const DSPOMDP* model);
 };
 
 } // namespace despot

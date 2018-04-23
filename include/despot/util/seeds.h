@@ -6,18 +6,19 @@
 
 namespace despot {
 
-class Seeds {
+class Seeds
+{
 private:
-	static unsigned root_seed_;
-	static Random seed_gen_;
-	static int num_assigned_seeds_;
+  static unsigned root_seed_;
+  static Random seed_gen_;
+  static int num_assigned_seeds_;
 
 public:
-	static void root_seed(unsigned value);
+  static void root_seed(unsigned value);
 
-	static unsigned Next();
+  static unsigned Next();
 
-	static std::vector<unsigned> Next(int n);
+  static std::vector<unsigned> Next(int n);
 };
 
 } // namespace despot

@@ -6,7 +6,8 @@ using namespace std;
 
 namespace despot {
 
-void disableBufferedIO(void) {
+void disableBufferedIO(void)
+{
   setbuf(stdout, NULL);
   setbuf(stdin, NULL);
   setbuf(stderr, NULL);
@@ -15,18 +16,22 @@ void disableBufferedIO(void) {
   setvbuf(stderr, NULL, _IONBF, 0);
 }
 
-SimpleTUI::SimpleTUI() {}
-
-SimpleTUI::~SimpleTUI() {}
-
-Solver *SimpleTUI::InitializeSolver(
-    DSPOMDP *model, string solver_type, option::Option *options)
+SimpleTUI::SimpleTUI()
 {
-  Solver *solver = NULL;
+}
+
+SimpleTUI::~SimpleTUI()
+{
+}
+
+Solver* SimpleTUI::InitializeSolver(
+    DSPOMDP* model, string solver_type, option::Option* options)
+{
+  Solver* solver = NULL;
 
   // DESPOT or its default policy
-  if (solver_type == "DESPOT" ||
-      solver_type == "PLB") // PLB: particle lower bound
+  if (solver_type == "DESPOT"
+      || solver_type == "PLB") // PLB: particle lower bound
   {
     // Base lower bound, TIGER: "DEFAULT"
     string blbtype = options[E_BLBTYPE] ? options[E_BLBTYPE].arg : "DEFAULT";
@@ -34,8 +39,8 @@ Solver *SimpleTUI::InitializeSolver(
     string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
 
     // ScenarioLowerBound inherits from Solver (model, belief, history).
-    ScenarioLowerBound *lower_bound =
-        model->CreateScenarioLowerBound(lbtype, blbtype);
+    ScenarioLowerBound* lower_bound
+        = model->CreateScenarioLowerBound(lbtype, blbtype);
     // TIGER: N6despot25TrivialParticleLowerBoundE
     logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
 
@@ -47,8 +52,8 @@ Solver *SimpleTUI::InitializeSolver(
       string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
 
       // ScenarioUpperBound does not inherit from Solver.
-      ScenarioUpperBound *upper_bound =
-          model->CreateScenarioUpperBound(ubtype, bubtype);
+      ScenarioUpperBound* upper_bound
+          = model->CreateScenarioUpperBound(ubtype, bubtype);
       // TIGER: N6despot25TrivialParticleLowerBoundE
       logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
 
@@ -65,31 +70,34 @@ Solver *SimpleTUI::InitializeSolver(
   else if (solver_type == "AEMS" || solver_type == "BLB")
   {
     string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
-    BeliefLowerBound *lower_bound =
-        static_cast<BeliefMDP *>(model)->CreateBeliefLowerBound(lbtype);
+    BeliefLowerBound* lower_bound
+        = static_cast<BeliefMDP*>(model)->CreateBeliefLowerBound(lbtype);
 
     logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
 
-    if (solver_type == "AEMS") {
+    if (solver_type == "AEMS")
+    {
       string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
-      BeliefUpperBound *upper_bound =
-          static_cast<BeliefMDP *>(model)->CreateBeliefUpperBound(ubtype);
+      BeliefUpperBound* upper_bound
+          = static_cast<BeliefMDP*>(model)->CreateBeliefUpperBound(ubtype);
 
       logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
 
       solver = new AEMS(model, lower_bound, upper_bound);
-    } else
+    }
+    else
       solver = lower_bound;
   }
   // POMCP or DPOMCP
   else if (solver_type == "POMCP" || solver_type == "DPOMCP")
   {
     string ptype = options[E_PRIOR] ? options[E_PRIOR].arg : "DEFAULT";
-    POMCPPrior *prior = model->CreatePOMCPPrior(ptype);
+    POMCPPrior* prior = model->CreatePOMCPPrior(ptype);
 
     logi << "Created POMCP prior " << typeid(*prior).name() << endl;
 
-    if (options[E_PRUNE]) {
+    if (options[E_PRUNE])
+    {
       prior->exploration_constant(Globals::config.pruning_constant);
     }
 
@@ -100,17 +108,22 @@ Solver *SimpleTUI::InitializeSolver(
   }
   // Unsupported solver
   else
-  { 
+  {
     cerr << "ERROR: Unsupported solver type: " << solver_type << endl;
     exit(1);
   }
   return solver;
 }
 
-void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
-                            string &simulator_type, string &belief_type,
-                            int &time_limit, string &solver_type,
-                            bool &search_solver) {
+void SimpleTUI::OptionParse(
+    option::Option* options,
+    int& num_runs,
+    string& simulator_type,
+    string& belief_type,
+    int& time_limit,
+    string& solver_type,
+    bool& search_solver)
+{
   if (options[E_SILENCE])
     Globals::config.silence = true;
 
@@ -122,11 +135,12 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
 
   if (options[E_SEED])
     Globals::config.root_seed = atoi(options[E_SEED].arg);
-  else { // last 9 digits of current time in milli second
+  else
+  { // last 9 digits of current time in milli second
     long millis = (long)get_time_second() * 1000;
     long range = (long)pow((double)10, (int)9);
-    Globals::config.root_seed =
-        (unsigned int)(millis - (millis / range) * range);
+    Globals::config.root_seed
+        = (unsigned int)(millis - (millis / range) * range);
   }
 
   if (options[E_TIMEOUT])
@@ -148,8 +162,8 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
     simulator_type = options[E_EVALUATOR].arg;
 
   if (options[E_MAX_POLICY_SIM_LEN])
-    Globals::config.max_policy_sim_len =
-        atoi(options[E_MAX_POLICY_SIM_LEN].arg);
+    Globals::config.max_policy_sim_len
+        = atoi(options[E_MAX_POLICY_SIM_LEN].arg);
 
   if (options[E_DEFAULT_ACTION])
     Globals::config.default_action = options[E_DEFAULT_ACTION].arg;
@@ -180,27 +194,39 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
   logging::level(verbosity);
 }
 
-void SimpleTUI::InitializeEvaluator(Evaluator *&simulator,
-                                    option::Option *options, DSPOMDP *model,
-                                    Solver *solver, int num_runs,
-                                    clock_t main_clock_start,
-                                    string simulator_type, string belief_type,
-                                    int time_limit, string solver_type)
+void SimpleTUI::InitializeEvaluator(
+    Evaluator*& simulator,
+    option::Option* options,
+    DSPOMDP* model,
+    Solver* solver,
+    int num_runs,
+    clock_t main_clock_start,
+    string simulator_type,
+    string belief_type,
+    int time_limit,
+    string solver_type)
 {
   cout << "[SimpleTUI::InitializeEvaluator]" << endl;
 
-  if (time_limit != -1) {
-    simulator =
-        new POMDPEvaluator(model, belief_type, solver, main_clock_start, &cout,
-                           EvalLog::curr_inst_start_time + time_limit,
-                           num_runs * Globals::config.sim_len);
-  } else {
-    simulator =
-        new POMDPEvaluator(model, belief_type, solver, main_clock_start, &cout);
+  if (time_limit != -1)
+  {
+    simulator = new POMDPEvaluator(
+        model,
+        belief_type,
+        solver,
+        main_clock_start,
+        &cout,
+        EvalLog::curr_inst_start_time + time_limit,
+        num_runs * Globals::config.sim_len);
+  }
+  else
+  {
+    simulator = new POMDPEvaluator(
+        model, belief_type, solver, main_clock_start, &cout);
   }
 }
 
-void SimpleTUI::DisplayParameters(option::Option *options, DSPOMDP *model)
+void SimpleTUI::DisplayParameters(option::Option* options, DSPOMDP* model)
 {
   cout << "[SimpleTUI::DisplayParameters]" << endl;
 
@@ -224,7 +250,7 @@ void SimpleTUI::DisplayParameters(option::Option *options, DSPOMDP *model)
               << Globals::config.max_policy_sim_len << endl
               << "Target gap ratio = " << Globals::config.xi << endl;
   // << "Solver = " << typeid(*solver).name() << endl << endl;
-  
+
   // TIGER:
   // [SimpleTUI::DisplayParameters]
   // Model = N6despot5TigerE
@@ -241,11 +267,16 @@ void SimpleTUI::DisplayParameters(option::Option *options, DSPOMDP *model)
   // Target gap ratio = 0.95
 }
 
-void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
-                             option::Option *options, int num_runs,
-                             bool search_solver, Solver *&solver,
-                             string simulator_type, clock_t main_clock_start,
-                             int start_run)
+void SimpleTUI::RunEvaluator(
+    DSPOMDP* model,
+    Evaluator* simulator,
+    option::Option* options,
+    int num_runs,
+    bool search_solver,
+    Solver*& solver,
+    string simulator_type,
+    clock_t main_clock_start,
+    int start_run)
 {
   cout << "[SimpleTUI::RunEvaluator]" << endl;
 
@@ -294,7 +325,7 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
     }
     if (logging::level() >= logging::DEBUG)
     {
-    cout << "before initround" << endl;
+      cout << "before initround" << endl;
     }
 
     // Initialize initial state, initial belief,
@@ -326,7 +357,7 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
            << endl;
       logi << "[main] Plan time ratio set to " << EvalLog::plan_time_ratio
            << endl;
-    //  default_out << endl;
+      //  default_out << endl;
     }
 
     default_out << "Simulation terminated in " << simulator->step() << " steps"
@@ -346,8 +377,9 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
   }
 }
 
-void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
-                            clock_t main_clock_start) {
+void SimpleTUI::PrintResult(
+    int num_runs, Evaluator* simulator, clock_t main_clock_start)
+{
 
   cout << "\nCompleted " << num_runs << " run(s)." << endl;
   cout << "Average total discounted reward (stderr) = "
@@ -361,19 +393,20 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
        << (double(clock() - main_clock_start) / CLOCKS_PER_SEC) << "s" << endl;
 }
 
-int SimpleTUI::run(int argc, char *argv[]) {
+int SimpleTUI::run(int argc, char* argv[])
+{
 
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();
 
-  const char *program = (argc > 0) ? argv[0] : "despot";
+  const char* program = (argc > 0) ? argv[0] : "despot";
 
   argc -= (argc > 0);
   argv += (argc > 0); // skip program name argv[0] if present
 
   option::Stats stats(usage, argc, argv);
-  option::Option *options = new option::Option[stats.options_max];
-  option::Option *buffer = new option::Option[stats.buffer_max];
+  option::Option* options = new option::Option[stats.options_max];
+  option::Option* buffer = new option::Option[stats.buffer_max];
   option::Parser parse(usage, argc, argv, options, buffer);
 
   string solver_type = "DESPOT";
@@ -395,13 +428,20 @@ int SimpleTUI::run(int argc, char *argv[]) {
   /* =========================
    * Parse optional parameters
    * =========================*/
-  if (options[E_HELP]) {
+  if (options[E_HELP])
+  {
     cout << "Usage: " << program << " [options]" << endl;
     option::printUsage(std::cout, usage);
     return 0;
   }
-  OptionParse(options, num_runs, simulator_type, belief_type, time_limit,
-              solver_type, search_solver);
+  OptionParse(
+      options,
+      num_runs,
+      simulator_type,
+      belief_type,
+      time_limit,
+      solver_type,
+      search_solver);
 
   /* =========================
    * Global random generator
@@ -415,24 +455,32 @@ int SimpleTUI::run(int argc, char *argv[]) {
    * initialize model
    * XXX: Model = the problem class, e.g. Tiger().
    * =========================*/
-  DSPOMDP *model = InitializeModel(options);
+  DSPOMDP* model = InitializeModel(options);
 
   /* =========================
    * initialize solver
    * =========================*/
   // initialize a solver with solver_type = "DESPOT" for the model.
-  Solver *solver = InitializeSolver(model, solver_type, options);
+  Solver* solver = InitializeSolver(model, solver_type, options);
   assert(solver != NULL);
 
   /* =========================
    * initialize simulator or evaluator with model, solver, and options.
    * =========================*/
-  Evaluator *simulator = NULL;
+  Evaluator* simulator = NULL;
   // TIGER: num_runs = 1, simulator_type = "pomdp", belief_type = "DEFAULT",
   // time_limit = -1, solver_type = "DESPOT"
-  InitializeEvaluator(simulator, options, model, solver, num_runs,
-                      main_clock_start, simulator_type, belief_type, time_limit,
-                      solver_type);
+  InitializeEvaluator(
+      simulator,
+      options,
+      model,
+      solver,
+      num_runs,
+      main_clock_start,
+      simulator_type,
+      belief_type,
+      time_limit,
+      solver_type);
   simulator->world_seed(world_seed);
 
   int start_run = 0;
@@ -446,9 +494,17 @@ int SimpleTUI::run(int argc, char *argv[]) {
    * run simulator with model, simulator, solver, and options.
    * =========================*/
   // TIGER: search_solver = 0
-  RunEvaluator(model, simulator, options, num_runs, search_solver, solver,
-               simulator_type, main_clock_start, start_run);
-exit(0);
+  RunEvaluator(
+      model,
+      simulator,
+      options,
+      num_runs,
+      search_solver,
+      solver,
+      simulator_type,
+      main_clock_start,
+      start_run);
+  exit(0);
 
   simulator->End();
 

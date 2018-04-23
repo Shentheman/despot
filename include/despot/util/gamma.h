@@ -7,16 +7,18 @@
 
 namespace despot {
 
-class Gamma {
+class Gamma
+{
 private:
-	double k_;
-	double theta_;
+  double k_;
+  double theta_;
+
 public:
-	Gamma(double k, double theta);
+  Gamma(double k, double theta);
 
-	double Next();
+  double Next();
 
-	static double Next(double k, double theta);
+  static double Next(double k, double theta);
 };
 
 } // namespace despot

@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include <despot/util/random.h>
-#include <despot/util/logging.h>
 #include <despot/core/history.h>
+#include <despot/util/logging.h>
+#include <despot/util/random.h>
 
 namespace despot {
 
@@ -17,16 +17,17 @@ class DSPOMDP;
  * Belief class
  * =============================================================================*/
 
-class Belief {
+class Belief
+{
 public:
-	const DSPOMDP* model_;
-	History history_;
+  const DSPOMDP* model_;
+  History history_;
 
 public:
-	Belief(const DSPOMDP* model);
-	virtual ~Belief();
+  Belief(const DSPOMDP* model);
+  virtual ~Belief();
 
-	virtual std::vector<State*> Sample(int num) const = 0;
+  virtual std::vector<State*> Sample(int num) const = 0;
 
   /*
    * Update the history by adding the action a and the observation o pair.
@@ -40,11 +41,11 @@ public:
    * If the list is empty, we resample.
    * Normalize the weights of the particles in the new list.
    */
-	virtual void Update(int action, OBS_TYPE obs) = 0;
+  virtual void Update(int action, OBS_TYPE obs) = 0;
 
-	virtual std::string text() const;
-	friend std::ostream& operator<<(std::ostream& os, const Belief& x);
-	virtual Belief* MakeCopy() const = 0;
+  virtual std::string text() const;
+  friend std::ostream& operator<<(std::ostream& os, const Belief& x);
+  virtual Belief* MakeCopy() const = 0;
 
   /*
    * Sample `num` number of particles from `belief`.
@@ -67,7 +68,7 @@ public:
    * to represent the probability mass inside the original particle list
    * `belief` as best as possible.
    */
-	static std::vector<State*> Sample(
+  static std::vector<State*> Sample(
       int num, std::vector<State*> belief, const DSPOMDP* model);
 
   /*
@@ -76,7 +77,8 @@ public:
    * TODO: One reason could be that the scenarios we randomly selected
    * are not very appropriate.
    *
-   * In Resample(), we sample a particle, step through the actions in the history,
+   * In Resample(), we sample a particle, step through the actions in the
+   * history,
    * and use random number to sample observations.
    * If prob is good, save it.
    * Remove all the particles with small weights.
@@ -89,16 +91,19 @@ public:
    * Note that here we are using new random number in Step() so that
    * we might find different observations, comparing to the previous one.
    */
-	static std::vector<State*> Resample(
-      int num, const std::vector<State*>& belief,
-      const DSPOMDP* model, History history, int hstart = 0);
+  static std::vector<State*> Resample(
+      int num,
+      const std::vector<State*>& belief,
+      const DSPOMDP* model,
+      History history,
+      int hstart = 0);
   /*
    * II. Same with I.
    * Instead of using the `std::vector<State*>& belief` and `DSPOMDP* model`
    * from the arguments, here we directly take the vector of State* and
    * the Step() function from `Belief& belief`.
    */
-	static std::vector<State*> Resample(
+  static std::vector<State*> Resample(
       int num, const Belief& belief, History history, int hstart = 0);
 
   /*
@@ -108,39 +113,46 @@ public:
    * from the last iteration. If the state after Step() has a good probability,
    * we will save it as a resampled particle.
    */
-	static std::vector<State*> Resample(
-      int num, const DSPOMDP* model,
-      const StateIndexer* indexer, int action, OBS_TYPE obs);
+  static std::vector<State*> Resample(
+      int num,
+      const DSPOMDP* model,
+      const StateIndexer* indexer,
+      int action,
+      OBS_TYPE obs);
 };
 
 /* =============================================================================
  * ParticleBelief class
  * =============================================================================*/
 
-class ParticleBelief: public Belief {
+class ParticleBelief : public Belief
+{
 protected:
-	std::vector<State*> particles_;
-	int num_particles_;
-	Belief* prior_;
-	bool split_;
-	std::vector<State*> initial_particles_;
-	const StateIndexer* state_indexer_;
+  std::vector<State*> particles_;
+  int num_particles_;
+  Belief* prior_;
+  bool split_;
+  std::vector<State*> initial_particles_;
+  const StateIndexer* state_indexer_;
 
 public:
-	ParticleBelief(std::vector<State*> particles, const DSPOMDP* model,
-		Belief* prior = NULL, bool split = true);
+  ParticleBelief(
+      std::vector<State*> particles,
+      const DSPOMDP* model,
+      Belief* prior = NULL,
+      bool split = true);
 
-	virtual ~ParticleBelief();
-	void state_indexer(const StateIndexer* indexer);
+  virtual ~ParticleBelief();
+  void state_indexer(const StateIndexer* indexer);
 
-	virtual const std::vector<State*>& particles() const;
-	virtual std::vector<State*> Sample(int num) const;
+  virtual const std::vector<State*>& particles() const;
+  virtual std::vector<State*> Sample(int num) const;
 
-	virtual void Update(int action, OBS_TYPE obs);
+  virtual void Update(int action, OBS_TYPE obs);
 
-	virtual Belief* MakeCopy() const;
+  virtual Belief* MakeCopy() const;
 
-	virtual std::string text() const;
+  virtual std::string text() const;
 };
 
 } // namespace despot

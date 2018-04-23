@@ -1,25 +1,25 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include <typeinfo>
-#include <memory>
-#include <set>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <list>
 #include <algorithm>
-#include <ctime>
-#include <vector>
-#include <queue>
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iostream>
 #include <limits>
-#include <sstream>
+#include <list>
 #include <map>
-#include <inttypes.h>
+#include <memory>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <string>
+#include <typeinfo>
+#include <vector>
 #include <despot/config.h>
+#include <inttypes.h>
 
 #include <despot/util/exec_tracker.h>
 #include <despot/util/logging.h>
@@ -37,28 +37,34 @@ extern const double TINY;
 extern Config config;
 extern ExecTracker tracker;
 
-inline bool Fequals(double a, double b) {
-	return std::fabs(a - b) < TINY;
+inline bool Fequals(double a, double b)
+{
+  return std::fabs(a - b) < TINY;
 }
 
-inline double Discount() {
-	return config.discount;
+inline double Discount()
+{
+  return config.discount;
 }
 
-inline double Discount(int d) {
-	return std::pow(config.discount, d);
+inline double Discount(int d)
+{
+  return std::pow(config.discount, d);
 }
 
-inline void Track(std::string addr, std::string loc) {
-	tracker.Track(addr, loc);
+inline void Track(std::string addr, std::string loc)
+{
+  tracker.Track(addr, loc);
 }
 
-inline void Untrack(std::string addr) {
-	tracker.Untrack(addr);
+inline void Untrack(std::string addr)
+{
+  tracker.Untrack(addr);
 }
 
-inline void PrintLocs() {
-	tracker.PrintLocs();
+inline void PrintLocs()
+{
+  tracker.PrintLocs();
 }
 } // namespace
 

@@ -3,21 +3,26 @@
 
 using namespace despot;
 
-class TUI: public SimpleTUI {
+class TUI : public SimpleTUI
+{
 public:
-	TUI() {
-	}
+  TUI()
+  {
+  }
 
-	DSPOMDP* InitializeModel(option::Option* options) {
-		DSPOMDP* model = NULL;
-		model = new Bridge();
-		return model;
-	}
+  DSPOMDP* InitializeModel(option::Option* options)
+  {
+    DSPOMDP* model = NULL;
+    model = new Bridge();
+    return model;
+  }
 
-	void InitializeDefaultParameters() {
-	}
+  void InitializeDefaultParameters()
+  {
+  }
 };
 
-int main(int argc, char* argv[]) {
-	return TUI().run(argc, argv);
+int main(int argc, char* argv[])
+{
+  return TUI().run(argc, argv);
 }
